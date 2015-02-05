@@ -163,6 +163,15 @@
             <version>2.2</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- add jboss run.jar to start with intellij IDEA-->
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>run</artifactId>
+            <version>${r"${vdoc.version}"}</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
