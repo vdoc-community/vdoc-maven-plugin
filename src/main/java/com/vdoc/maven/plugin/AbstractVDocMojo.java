@@ -49,7 +49,7 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
         super();
         this.notWebAppFolderFileFilter = new FileFilter() {
             @Override
-			public boolean accept(File file) {
+            public boolean accept(File file) {
 				return !FilenameUtils.wildcardMatch(file.getAbsolutePath(), WILDCARD_WEB_APP, IOCase.INSENSITIVE);
 			}
 		};
@@ -71,7 +71,7 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
 			classifier = "";
         } else if (classifier.trim().isEmpty() && !classifier.startsWith("-")) {
             classifier = "-" + classifier;
-		}
+        }
 
 		return new File(basedir, finalName + classifier + ".jar");
 	}
