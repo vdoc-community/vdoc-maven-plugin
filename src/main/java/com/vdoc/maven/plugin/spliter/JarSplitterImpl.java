@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
+ * this implementation split jar whose contain all (bin, javadoc, and source) into multiple jar like maven default output.
  * Created by famaridon on 10/02/15.
  */
 public class JarSplitterImpl implements JarSplitter {
@@ -53,7 +54,7 @@ public class JarSplitterImpl implements JarSplitter {
 
     public void split() throws IOException {
 
-        ArchiveEntry archiveEntry = jarInputStream.getNextEntry();
+        ArchiveEntry archiveEntry = this.jarInputStream.getNextEntry();
         while (null != archiveEntry) {
             if (archiveEntry.getName().startsWith("apidocs/") && !archiveEntry.getName().equals("apidocs/")) {
                 this.appendJavadoc(archiveEntry);
@@ -62,12 +63,12 @@ public class JarSplitterImpl implements JarSplitter {
             } else {
 //                getLog().debug("class : " + archiveEntry.getName());
                 if (archiveEntry.getSize() > 0) {
-                    if (archiveEntry.getSize() != jarInputStream.skip(archiveEntry.getSize())) {
+                    if (archiveEntry.getSize() != this.jarInputStream.skip(archiveEntry.getSize())) {
                         throw new IllegalStateException("the archive reader cursor have not skip the right number of byte!");
                     }
                 }
             }
-            archiveEntry = jarInputStream.getNextEntry();
+            archiveEntry = this.jarInputStream.getNextEntry();
         }
 
     }
