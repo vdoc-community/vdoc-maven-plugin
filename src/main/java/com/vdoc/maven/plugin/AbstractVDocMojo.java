@@ -6,6 +6,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -46,13 +47,14 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
 
 	protected AbstractVDocMojo() {
         super();
-        notWebAppFolderFileFilter = new FileFilter() {
-			@Override
+        this.notWebAppFolderFileFilter = new FileFilter() {
+            @Override
 			public boolean accept(File file) {
 				return !FilenameUtils.wildcardMatch(file.getAbsolutePath(), WILDCARD_WEB_APP, IOCase.INSENSITIVE);
 			}
 		};
-	}
+        StaticLoggerBinder.getSingleton().setLog(this.getLog());
+    }
 
 	/**
 	 * clone from maven jar plugin.
@@ -67,8 +69,8 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
 	protected static File getJarFile(File basedir, String finalName, String classifier) {
 		if (classifier == null) {
 			classifier = "";
-		} else if (classifier.trim().length() > 0 && !classifier.startsWith("-")) {
-			classifier = "-" + classifier;
+        } else if (classifier.trim().isEmpty() && !classifier.startsWith("-")) {
+            classifier = "-" + classifier;
 		}
 
 		return new File(basedir, finalName + classifier + ".jar");

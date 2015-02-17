@@ -1,15 +1,16 @@
 package com.vdoc.maven.plugin;
 
 import com.vdoc.maven.plugin.beans.DeployFileConfiguration;
+import com.vdoc.maven.plugin.pom.ParentPOM;
+import com.vdoc.maven.plugin.pom.ParentPOMGenerator;
+import com.vdoc.maven.plugin.pom.ParentPOMGeneratorImpl;
+import com.vdoc.maven.plugin.pom.exception.PomGenerationException;
 import com.vdoc.maven.plugin.spliter.JarSplitter;
 import com.vdoc.maven.plugin.spliter.JarSplitterImpl;
 import com.vdoc.maven.plugin.utils.OSUtils;
 import com.vdoc.maven.plugin.utils.StreamGobbler;
 import com.vdoc.maven.plugin.utils.impl.MojoLoggerAdapter;
-import freemarker.ext.beans.BeansWrapper;
-import freemarker.template.*;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.AndFileFilter;
 import org.apache.commons.io.filefilter.OrFileFilter;
 import org.apache.commons.io.filefilter.PrefixFileFilter;
@@ -24,7 +25,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,16 +100,16 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        this.pluginDescriptor = ((PluginDescriptor) getPluginContext().get("pluginDescriptor"));
+        this.pluginDescriptor = (PluginDescriptor) this.getPluginContext().get("pluginDescriptor");
 
         if (this.mavenHome == null) {
             String mavenEnv = System.getenv("M2_HOME");
             Validate.notEmpty(mavenEnv, "M2_HOME is not set you can used the maven-home configuration!");
-            mavenHome = new File(mavenEnv);
+            this.mavenHome = new File(mavenEnv);
         }
 
-        if (!mavenHome.exists()) {
-            throw new IllegalArgumentException("maven home (M2_HOME or maven-home configuration) is set to bad location : " + mavenHome.getAbsolutePath());
+        if (!this.mavenHome.exists()) {
+            throw new IllegalArgumentException("maven home (M2_HOME or maven-home configuration) is set to bad location : " + this.mavenHome.getAbsolutePath());
         }
 
         OrFileFilter prefixFileFilter = new OrFileFilter();
@@ -117,84 +120,45 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         fileFilter.addFileFilter(prefixFileFilter);
         fileFilter.addFileFilter(new SuffixFileFilter(".jar"));
 
-        File[] earFiles = earFolder.listFiles((FileFilter) fileFilter);
-        getLog().info("Scan the vdoc.ear folder");
-        deployFiles(earFiles);
-        getLog().info("Scan the vdoc.ear/lib folder");
-        File[] earLibFiles = new File(earFolder, "lib").listFiles((FileFilter) fileFilter);
-        deployFiles(earLibFiles);
+        File[] earFiles = this.earFolder.listFiles((FileFilter) fileFilter);
+        this.getLog().info("Scan the vdoc.ear folder");
+        this.deployFiles(earFiles);
+        this.getLog().info("Scan the vdoc.ear/lib folder");
+        File[] earLibFiles = new File(this.earFolder, "lib").listFiles((FileFilter) fileFilter);
+        this.deployFiles(earLibFiles);
 
-        buildParentPom("sdk");
-        buildParentPom("sdk.advanced");
+        this.buildParentPom(ParentPOM.SDK);
+        this.buildParentPom(ParentPOM.SDK_ADVANCED);
 
     }
 
     /**
      * used to build a parent pom from ftl file
      *
-     * @param artifactId
+     * @param pom the pom file to generate.
      * @throws MojoExecutionException
      */
-    protected void buildParentPom(String artifactId) throws MojoExecutionException {
-        getLog().info("Create the " + artifactId + " pom file");
+    protected void buildParentPom(ParentPOM pom) throws MojoExecutionException {
+        this.getLog().info("Create the " + pom + " pom file");
         try {
-            // build the full pom
-            Configuration cfg = new Configuration();
 
-            // Specify the data source where the template files come from. Here I set a
-            // plain directory for it, but non-file-system are possible too:
-            cfg.setDirectoryForTemplateLoading(mavenHome);
+            ParentPOMGenerator generator = new ParentPOMGeneratorImpl(this.mavenHome, pom, this);
 
-            // Specify how templates will see the data-model. This is an advanced topic...
-            // for now just use this:
-            cfg.setObjectWrapper(new BeansWrapper());
+            File pomFile = generator.generate();
 
-            // Set your preferred charset template files are stored in. UTF-8 is
-            // a good choice in most applications:
-            cfg.setDefaultEncoding("UTF-8");
-
-            // Sets how errors will appear. Here we assume we are developing HTML pages.
-            // For production systems TemplateExceptionHandler.RETHROW_HANDLER is better.
-            cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-
-            // At least in new projects, specify that you want the fixes that aren't
-            // 100% backward compatible too (these are very low-risk changes as far as the
-            // 1st and 2nd version number remains):
-            cfg.setIncompatibleImprovements(new Version(2, 3, 20));  // FreeMarker 2.3.20
-
-            // copy the template from jar freemaker can't read stream
-            getLog().debug("get the sdk template localy.");
-            String ftlName = artifactId + ".ftl";
-            try (
-                    InputStream input = getClass().getClassLoader().getResourceAsStream("pom/" + ftlName);
-                    FileOutputStream outputStream = new FileOutputStream(new File(this.mavenHome, ftlName))
-            ) {
-                IOUtils.copy(input, outputStream);
-                outputStream.flush();
-            }
-
-            getLog().debug("Parse the  ftl.");
-            Template temp = cfg.getTemplate(ftlName);
-
-            File pom = new File(this.mavenHome, "pom.xml");
-            try (Writer out = new FileWriter(pom)) {
-                temp.process(this, out);
-                out.flush();
-            }
-
-            DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(pom, repositoryId);
-            deployFileConfiguration.setArtifactId(artifactId);
+            DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(pomFile, this.repositoryId);
+            deployFileConfiguration.setArtifactId(pom.getArtifactId());
             deployFileConfiguration.setGroupId("com.vdoc.engineering");
-            deployFileConfiguration.setVersion(targetVersion);
-            deployFileConfiguration.setUniqueVersion(uniqueVersion);
-            deployFileConfiguration.setUrl(repositoryUrl);
+            deployFileConfiguration.setVersion(this.targetVersion);
+            deployFileConfiguration.setUniqueVersion(this.uniqueVersion);
+            deployFileConfiguration.setUrl(this.repositoryUrl);
             deployFileConfiguration.setPackaging("pom");
             this.deployFileToNexus(deployFileConfiguration);
 
-            pom.renameTo(new File(this.mavenHome, artifactId + ".xml"));
+            pomFile.renameTo(new File(this.mavenHome, pom.getArtifactId() + ".xml"));
 
 
-        } catch (IOException | TemplateException e) {
+        } catch (IOException | PomGenerationException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
@@ -204,25 +168,25 @@ public class DeployVDocMojo extends AbstractVDocMojo {
             return;
         }
         for (File jar : vdocFiles) {
-            getLog().debug("parsing file : " + jar.getName());
-            DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(jar, repositoryId);
+            this.getLog().debug("parsing file : " + jar.getName());
+            DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(jar, this.repositoryId);
             deployFileConfiguration.setArtifactId(StringUtils.substringBefore(FilenameUtils.getBaseName(jar.getName()), "-suite"));
-            deployFileConfiguration.setGroupId(targetGroupId);
-            deployFileConfiguration.setVersion(targetVersion);
-            deployFileConfiguration.setUniqueVersion(uniqueVersion);
-            deployFileConfiguration.setUrl(repositoryUrl);
+            deployFileConfiguration.setGroupId(this.targetGroupId);
+            deployFileConfiguration.setVersion(this.targetVersion);
+            deployFileConfiguration.setUniqueVersion(this.uniqueVersion);
+            deployFileConfiguration.setUrl(this.repositoryUrl);
 
-            getLog().debug("search javadoc");
+            this.getLog().debug("search javadoc");
             try {
-                this.splitJar(deployFileConfiguration, jar);
-                dependencies.add(deployFileConfiguration);
+                this.splitJar(deployFileConfiguration);
+                this.dependencies.add(deployFileConfiguration);
                 if (!this.onlyParentPom) {
-                    deployFileToNexus(deployFileConfiguration);
+                    this.deployFileToNexus(deployFileConfiguration);
                 }
 
             } finally {
-                if (deleteSplittedJar) {
-                    getLog().debug("delete javadoc jar");
+                if (this.deleteSplittedJar) {
+                    this.getLog().debug("delete javadoc jar");
                     if (deployFileConfiguration.getJavadoc() != null) {
                         deployFileConfiguration.getJavadoc().delete();
                     }
@@ -242,14 +206,13 @@ public class DeployVDocMojo extends AbstractVDocMojo {
      * @throws MojoExecutionException
      */
     protected void deployFileToNexus(DeployFileConfiguration deployFileConfiguration) throws MojoExecutionException {
-        System.out.println(deployFileConfiguration.toCmd());
         try {
             List<String> cmd = deployFileConfiguration.toCmd();
             cmd.add(0, "deploy:deploy-file");
             cmd.add(0, "-X");
             cmd.add(0, new File(this.mavenHome, "/bin/mvn" + (OSUtils.isWindows() ? ".bat" : "")).getAbsolutePath());
 
-            getLog().info(cmd.toString());
+            this.getLog().info(cmd.toString());
 
             ProcessBuilder builder = new ProcessBuilder(cmd);
             Process process = builder.start();
@@ -264,7 +227,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
             int code = process.waitFor();
             if (code != 0) {
-                throw new MojoExecutionException("" + deployFileConfiguration.toCmd().toString());
+                throw new MojoExecutionException(deployFileConfiguration.toCmd().toString());
             }
 
         } catch (IOException | InterruptedException e) {
@@ -275,16 +238,13 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     /**
      * split jar into source and javadoc jar
      *
-     * @param deployFileConfiguration
-     * @param jar
+     * @param deployFileConfiguration the file descriptor to split
      * @throws MojoExecutionException
      */
-    protected void splitJar(DeployFileConfiguration deployFileConfiguration, File jar) throws MojoExecutionException {
-        try (JarSplitter jarSplitter = new JarSplitterImpl(jar)) {
-
+    protected void splitJar(DeployFileConfiguration deployFileConfiguration) throws MojoExecutionException {
+        try (JarSplitter jarSplitter = new JarSplitterImpl(deployFileConfiguration.getFile())) {
 
             jarSplitter.split();
-
             if (jarSplitter.getJar().exists()) {
                 deployFileConfiguration.setJavadoc(jarSplitter.getJar());
             }
@@ -300,7 +260,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public MavenProject getProject() {
-        return project;
+        return this.project;
     }
 
     public void setProject(MavenProject project) {
@@ -308,7 +268,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public MavenSession getSession() {
-        return session;
+        return this.session;
     }
 
     public void setSession(MavenSession session) {
@@ -316,7 +276,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public File getEarFolder() {
-        return earFolder;
+        return this.earFolder;
     }
 
     public void setEarFolder(File earFolder) {
@@ -324,7 +284,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public String getTargetVersion() {
-        return targetVersion;
+        return this.targetVersion;
     }
 
     public void setTargetVersion(String targetVersion) {
@@ -332,7 +292,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public String getTargetGroupId() {
-        return targetGroupId;
+        return this.targetGroupId;
     }
 
     public void setTargetGroupId(String targetGroupId) {
@@ -340,7 +300,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public String getRepositoryId() {
-        return repositoryId;
+        return this.repositoryId;
     }
 
     public void setRepositoryId(String repositoryId) {
@@ -348,7 +308,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public boolean isUniqueVersion() {
-        return uniqueVersion;
+        return this.uniqueVersion;
     }
 
     public void setUniqueVersion(boolean uniqueVersion) {
@@ -356,7 +316,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public String getRepositoryUrl() {
-        return repositoryUrl;
+        return this.repositoryUrl;
     }
 
     public void setRepositoryUrl(String repositoryUrl) {
@@ -364,7 +324,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public File getMavenHome() {
-        return mavenHome;
+        return this.mavenHome;
     }
 
     public void setMavenHome(File mavenHome) {
@@ -372,7 +332,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public List<DeployFileConfiguration> getDependencies() {
-        return dependencies;
+        return this.dependencies;
     }
 
     public void setDependencies(List<DeployFileConfiguration> dependencies) {
@@ -380,7 +340,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public PluginDescriptor getPluginDescriptor() {
-        return pluginDescriptor;
+        return this.pluginDescriptor;
     }
 
     public void setPluginDescriptor(PluginDescriptor pluginDescriptor) {
@@ -388,7 +348,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     }
 
     public boolean isOnlyParentPom() {
-        return onlyParentPom;
+        return this.onlyParentPom;
     }
 
     public void setOnlyParentPom(boolean onlyParentPom) {

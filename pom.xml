@@ -62,10 +62,17 @@
             <version>[2.3.20,)</version>
         </dependency>
 
+        <!-- Logger API -->
         <dependency>
-            <groupId>org.tmatesoft.svnkit</groupId>
-            <artifactId>svnkit</artifactId>
-            <version>1.8.7</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>[1.7.10,)</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode.slf4j-maven-plugin-log</groupId>
+            <artifactId>slf4j-maven-plugin-log</artifactId>
+            <version>[1.0.0,)</version>
         </dependency>
 
 
