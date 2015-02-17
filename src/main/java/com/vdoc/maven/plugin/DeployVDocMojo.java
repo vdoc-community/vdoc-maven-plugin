@@ -9,7 +9,7 @@ import com.vdoc.maven.plugin.spliter.JarSplitter;
 import com.vdoc.maven.plugin.spliter.JarSplitterImpl;
 import com.vdoc.maven.plugin.utils.OSUtils;
 import com.vdoc.maven.plugin.utils.StreamGobbler;
-import com.vdoc.maven.plugin.utils.impl.MojoLoggerAdapter;
+import com.vdoc.maven.plugin.utils.impl.SLF4JLoggerAdapter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.AndFileFilter;
 import org.apache.commons.io.filefilter.OrFileFilter;
@@ -221,9 +221,9 @@ public class DeployVDocMojo extends AbstractVDocMojo {
             ProcessBuilder builder = new ProcessBuilder(cmd);
             Process process = builder.start();
 
-            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), new MojoLoggerAdapter(this.getLog(), "error"), deployFileConfiguration.getArtifactId());
+            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), new SLF4JLoggerAdapter(LOGGER, "error"), deployFileConfiguration.getArtifactId());
 
-            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), new MojoLoggerAdapter(this.getLog(), "info"), deployFileConfiguration.getArtifactId());
+            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), new SLF4JLoggerAdapter(LOGGER, "debug"), deployFileConfiguration.getArtifactId());
 
             // start gobblers
             outputGobbler.start();

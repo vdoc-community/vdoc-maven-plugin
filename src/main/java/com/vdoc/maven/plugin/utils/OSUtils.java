@@ -1,12 +1,17 @@
 package com.vdoc.maven.plugin.utils;
 
 /**
+ * this class can be used to detect operating system.
  * Created by famaridon on 06/01/2015.
  */
-public class OSUtils {
-	private static String OS = System.getProperty("os.name").toLowerCase();
+public final class OSUtils {
+    private static final String OS = System.getProperty("os.name").toLowerCase();
 
-	public static boolean isWindows() {
+    private OSUtils() {
+        super();
+    }
+
+    public static boolean isWindows() {
         return OS.contains("win");
     }
 
@@ -15,7 +20,7 @@ public class OSUtils {
     }
 
 	public static boolean isUnix() {
-        return OS.contains("nix") || OS.contains("nux") || OS.indexOf("aix") > 0;
+        return OS.contains("nix") || OS.contains("nux") || (OS.indexOf("aix") > 0);
     }
 
 	public static boolean isSolaris() {

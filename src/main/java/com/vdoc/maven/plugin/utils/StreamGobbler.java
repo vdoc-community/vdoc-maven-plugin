@@ -1,5 +1,8 @@
 package com.vdoc.maven.plugin.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +12,8 @@ import java.io.InputStreamReader;
  * Created by famaridon on 04/07/2014.
  */
 public class StreamGobbler extends Thread {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StreamGobbler.class);
 
 	protected GobblerAdapter gobblerAdapter;
 	protected InputStream is;
@@ -28,11 +33,11 @@ public class StreamGobbler extends Thread {
                 BufferedReader br = new BufferedReader(isr)) {
             String line;
             while ((line = br.readLine()) != null) {
-				gobblerAdapter.println(prefix + " > " + line);
-			}
+                this.gobblerAdapter.println(this.prefix + " > " + line);
+            }
 
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
+        } catch (IOException e) {
+            LOGGER.error("Stream can't be gobbed!", e);
+        }
 	}
 }
