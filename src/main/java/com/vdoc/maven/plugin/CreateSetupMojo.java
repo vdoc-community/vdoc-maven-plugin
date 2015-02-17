@@ -18,6 +18,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.List;
@@ -33,7 +35,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
     public static final String BASE_ZIP_FOLDER = "";
     public static final String SETUP_SUFFIX = "setup";
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateSetupMojo.class);
     /**
      * this is used to synchronize multiple modules build on multiple thread
      */
@@ -103,7 +105,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         if ("pom".equalsIgnoreCase(this.project.getPackaging())) {
-            getLog().warn("This mojo can't work for pom packaging project!");
+            LOGGER.warn("This mojo can't work for pom packaging project!");
             return;
         }
 
@@ -131,15 +133,15 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
     public File createAppsSetup() throws IOException, MojoExecutionException {
 
-        getLog().info("Create the VDoc apps packaging Zip.");
+        LOGGER.info("Create the VDoc apps packaging Zip.");
         File vdocAppOutput = new File(buildDirectory, setupName + ".zip");
         try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(vdocAppOutput)) {
 
-            getLog().debug("try to add custom resources ");
+            LOGGER.debug("try to add custom resources ");
             for (Resource r : this.project.getResources()) {
                 File resourcesDirectory = new File(r.getDirectory());
                 File customFolder = new File(resourcesDirectory.getParentFile(), "custom");
-                getLog().debug("add custom folder " + customFolder.getAbsolutePath());
+                LOGGER.debug("add custom folder " + customFolder.getAbsolutePath());
                 if (customFolder.isDirectory()) {
                     File[] customFolders = customFolder.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
                     for (File f : customFolders) {
@@ -157,7 +159,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
                 if (testJar.exists()) {
                     this.compressDirectory(output, testJar, "lib/");
                 } else {
-                    getLog().warn("Test jar not found!");
+                    LOGGER.warn("Test jar not found!");
                 }
             }
 
@@ -171,7 +173,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
         }
 
 
-        getLog().info("create the meta setup zip with apps, documentation, fix, ...");
+        LOGGER.info("create the meta setup zip with apps, documentation, fix, ...");
         File metaAppOutput = new File(buildDirectory, setupName + "-" + SETUP_SUFFIX + ".zip");
         try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(metaAppOutput)) {
             for (Resource r : this.project.getResources()) {
@@ -185,13 +187,13 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             }
 
             // add the packaged apps
-            getLog().debug("add the packaged apps");
+            LOGGER.debug("add the packaged apps");
             this.compressDirectory(output, vdocAppOutput, "apps/");
 
 
             // include linked apps
             if (includeDependenciesSetups) {
-                getLog().warn("not implemented");
+                LOGGER.warn("not implemented");
                 this.store = new DevEngStore();
                 this.includeDependenciesSetups(output);
             }
@@ -200,14 +202,14 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             // include vdoc fix
             File fix = new File(this.project.getBasedir(), "fix");
             if (fix.exists()) {
-                getLog().debug("add fix folder");
+                LOGGER.debug("add fix folder");
                 this.compressDirectory(output, fix, "fix/");
             }
 
             // include documentation
             File documentation = new File(this.project.getBasedir(), "documentation");
             if (documentation.exists()) {
-                getLog().debug("add documentation folder");
+                LOGGER.debug("add documentation folder");
                 this.compressDirectory(output, documentation, "documentation/");
             }
 
@@ -220,12 +222,12 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
     protected void includeDependenciesSetups(ZipArchiveOutputStream output) throws IOException, MojoExecutionException {
         for (Dependency dependency : this.project.getDependencies()) {
-            getLog().debug(dependency.toString());
+            LOGGER.debug(dependency.toString());
             if (dependenciesSetupsGroupIds.contains(dependency.getGroupId())) {
-                getLog().info("Search setup for : " + dependency.toString());
+                LOGGER.info("Search setup for : " + dependency.toString());
                 try (InputStream inputStream = store.get(dependency)) {
                     if (inputStream == null) {
-                        getLog().warn("No setup found for : " + dependency.toString());
+                        LOGGER.warn("No setup found for : " + dependency.toString());
 
                     } else {
                         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
@@ -253,7 +255,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
         // include other modules
         if (this.includeOtherModules) {
 
-            getLog().info("Join for other modules");
+            LOGGER.info("Join for other modules");
             // only 1 module can join others tack lock
             synchronized (completedModulesLock) {
                 if (completedModulesLock == Boolean.TRUE) {
@@ -267,10 +269,10 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             do {
                 try {
                     CompletedModule completedModule = completedModules.poll(includeOtherModulesTimeout, TimeUnit.SECONDS);
-                    getLog().info("Join module " + completedModule.getArtifactId() + " merge setup file " + completedModule.getSetup().getName());
+                    LOGGER.info("Join module " + completedModule.getArtifactId() + " merge setup file " + completedModule.getSetup().getName());
 
                     if (completedModule.getSetup() == null) {
-                        getLog().warn(completedModule.getArtifactId() + " have fail!");
+                        LOGGER.warn(completedModule.getArtifactId() + " have fail!");
                         throw new MojoExecutionException(completedModule.getArtifactId() + " have fail!");
                     }
 
@@ -309,7 +311,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             if (!to.canWriteEntryData(entry)) {
                 throw new MojoExecutionException("Can't merge setup files!");
             }
-            getLog().debug("merge entry : " + entry.getName());
+            LOGGER.debug("merge entry : " + entry.getName());
             to.putArchiveEntry(entry);
             IOUtils.copyLarge(from, to, offset, entry.getSize());
             to.closeArchiveEntry();
@@ -343,7 +345,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
         }
 
         String entryName = base + directory.getName();
-        getLog().debug("Add Zip entry : " + entryName);
+        LOGGER.debug("Add Zip entry : " + entryName);
         ArchiveEntry tarEntry = outputStream.createArchiveEntry(directory, entryName);
         outputStream.putArchiveEntry(tarEntry);
 
@@ -385,7 +387,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     public PackagingType getPackagingType() {
-        return packagingType;
+        return this.packagingType;
     }
 
     public void setPackagingType(PackagingType packagingType) {
@@ -393,7 +395,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     public String getSetupName() {
-        return setupName;
+        return this.setupName;
     }
 
     public void setSetupName(String setupName) {
@@ -401,7 +403,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     public File getLibFolder() {
-        return libFolder;
+        return this.libFolder;
     }
 
     public void setLibFolder(File libFolder) {
@@ -409,7 +411,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     public boolean isIncludeTest() {
-        return includeTest;
+        return this.includeTest;
     }
 
     public void setIncludeTest(boolean includeTest) {
@@ -417,7 +419,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     public boolean isIncludeJavadoc() {
-        return includeJavadoc;
+        return this.includeJavadoc;
     }
 
     public void setIncludeJavadoc(boolean includeJavadoc) {
@@ -425,7 +427,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     public boolean isIncludeSource() {
-        return includeSource;
+        return this.includeSource;
     }
 
     public void setIncludeSource(boolean includeSource) {
@@ -433,7 +435,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     public boolean isIncludeOtherModules() {
-        return includeOtherModules;
+        return this.includeOtherModules;
     }
 
     public void setIncludeOtherModules(boolean includeOtherModules) {
@@ -441,7 +443,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     public boolean isIncludeDependenciesSetups() {
-        return includeDependenciesSetups;
+        return this.includeDependenciesSetups;
     }
 
     public void setIncludeDependenciesSetups(boolean includeDependenciesSetups) {
@@ -449,7 +451,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     public List<String> getDependenciesSetupsGroupIds() {
-        return dependenciesSetupsGroupIds;
+        return this.dependenciesSetupsGroupIds;
     }
 
     public void setDependenciesSetupsGroupIds(List<String> dependenciesSetupsGroupIds) {

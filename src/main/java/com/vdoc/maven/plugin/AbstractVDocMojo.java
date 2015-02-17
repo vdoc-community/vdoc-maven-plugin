@@ -6,6 +6,8 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.impl.StaticLoggerBinder;
 
 import java.io.File;
@@ -15,6 +17,8 @@ import java.io.FileFilter;
  * Created by famaridon on 19/05/2014.
  */
 public abstract class AbstractVDocMojo extends AbstractMojo {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractVDocMojo.class);
 
 	private static final String WILDCARD_WEB_APP = FilenameUtils.separatorsToSystem("*custom/webapp*");
 
@@ -77,19 +81,19 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
 	}
 
 	public MavenProject getProject() {
-		return project;
-	}
+        return this.project;
+    }
 
 	public MavenSession getSession() {
-		return session;
-	}
+        return this.session;
+    }
 
 	public File getBuildDirectory() {
-		return buildDirectory;
-	}
+        return this.buildDirectory;
+    }
 
 	public String getJarName() {
-		return jarName;
-	}
+        return this.jarName;
+    }
 
 }

@@ -7,6 +7,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,8 +21,8 @@ import java.io.InputStream;
 @Mojo(name = "upload-setup", threadSafe = true, defaultPhase = LifecyclePhase.DEPLOY)
 public class UploadSetupMojo extends AbstractVDocMojo {
 
-
-	/**
+    private static final Logger LOGGER = LoggerFactory.getLogger(UploadSetupMojo.class);
+    /**
 	 * the user name with upload right
 	 */
 	@Parameter(required = true)
@@ -66,8 +68,8 @@ public class UploadSetupMojo extends AbstractVDocMojo {
 
 			if (!FTPReply.isPositiveCompletion(reply)) {
 				ftpClient.disconnect();
-				getLog().error("FTP server refused connection.");
-				throw new MojoFailureException("FTP server refused connection.");
+                LOGGER.error("FTP server refused connection.");
+                throw new MojoFailureException("FTP server refused connection.");
 			}
 
 			ftpClient.login(username, password);

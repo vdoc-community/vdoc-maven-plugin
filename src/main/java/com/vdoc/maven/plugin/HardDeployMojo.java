@@ -6,6 +6,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +17,8 @@ import java.io.IOException;
  */
 @Mojo(name = "hard-deploy", threadSafe = true, defaultPhase = LifecyclePhase.PACKAGE)
 public class HardDeployMojo extends AbstractVDocMojo {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeneratePluginDocMojo.class);
 
     protected File vdocEAR;
 
@@ -59,17 +63,17 @@ public class HardDeployMojo extends AbstractVDocMojo {
             if (jar.exists()) {
 
                 File libDirectory = new File(vdocEAR, "lib");
-                getLog().info(String.format("Copy %1$s to %2$s", jar.getAbsolutePath(), libDirectory.getAbsolutePath()));
+                LOGGER.info(String.format("Copy %1$s to %2$s", jar.getAbsolutePath(), libDirectory.getAbsolutePath()));
                 FileUtils.copyFileToDirectory(jar, libDirectory);
 
                 if (this.includeTest) {
 
                     File testJar = getJarFile(buildDirectory, jarName, "tests");
                     if (testJar.exists()) {
-                        getLog().info(String.format("Copy test jar %1$s to %2$s", testJar.getAbsolutePath(), libDirectory.getAbsolutePath()));
+                        LOGGER.info(String.format("Copy test jar %1$s to %2$s", testJar.getAbsolutePath(), libDirectory.getAbsolutePath()));
                         FileUtils.copyFileToDirectory(testJar, libDirectory);
                     } else {
-                        getLog().warn("No test jar found!");
+                        LOGGER.warn("No test jar found!");
                     }
                 }
 
@@ -77,10 +81,10 @@ public class HardDeployMojo extends AbstractVDocMojo {
 
                     File sourceJar = getJarFile(buildDirectory, jarName, "source");
                     if (sourceJar.exists()) {
-                        getLog().info(String.format("Copy source jar %1$s to %2$s", sourceJar.getAbsolutePath(), libDirectory.getAbsolutePath()));
+                        LOGGER.info(String.format("Copy source jar %1$s to %2$s", sourceJar.getAbsolutePath(), libDirectory.getAbsolutePath()));
                         FileUtils.copyFileToDirectory(sourceJar, libDirectory);
                     } else {
-                        getLog().warn("No source jar found!");
+                        LOGGER.warn("No source jar found!");
                     }
 
                 }
@@ -96,11 +100,11 @@ public class HardDeployMojo extends AbstractVDocMojo {
                     File customFolder = new File(sourceRoot.getParentFile(), "custom");
 
                     if (customFolder.exists()) {
-                        getLog().info(String.format("Copy custom %1$s to %2$s", customFolder.getAbsolutePath(), targetCustomFolder.getAbsolutePath()));
+                        LOGGER.info(String.format("Copy custom %1$s to %2$s", customFolder.getAbsolutePath(), targetCustomFolder.getAbsolutePath()));
                         FileUtils.copyDirectory(customFolder, targetCustomFolder, notWebAppFolderFileFilter);
                         File customWebappFolder = new File(customFolder, "webapp");
                         if (customWebappFolder.exists()) {
-                            getLog().info(String.format("Copy webapp %1$s to %2$s", customWebappFolder.getAbsolutePath(), targetWebappFolder.getAbsolutePath()));
+                            LOGGER.info(String.format("Copy webapp %1$s to %2$s", customWebappFolder.getAbsolutePath(), targetWebappFolder.getAbsolutePath()));
                             FileUtils.copyDirectory(customWebappFolder, targetWebappFolder);
                         }
                     }
@@ -109,7 +113,7 @@ public class HardDeployMojo extends AbstractVDocMojo {
             if (this.deployDependencies && dependenciesFolder.exists() && dependenciesFolder.isDirectory()) {
                 File vdocEARLib = new File(this.vdocEAR, "lib");
 
-                getLog().info(String.format("Copy %1$s to %2$s", dependenciesFolder.getAbsolutePath(), vdocEARLib.getAbsolutePath()));
+                LOGGER.info(String.format("Copy %1$s to %2$s", dependenciesFolder.getAbsolutePath(), vdocEARLib.getAbsolutePath()));
                 FileUtils.copyDirectory(dependenciesFolder, vdocEARLib);
             }
 

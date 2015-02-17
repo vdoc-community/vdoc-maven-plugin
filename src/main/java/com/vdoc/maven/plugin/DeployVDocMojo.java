@@ -24,6 +24,8 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -36,6 +38,8 @@ import java.util.List;
  */
 @Mojo(name = "deploy-vdoc", threadSafe = false, requiresProject = false, requiresDirectInvocation = true)
 public class DeployVDocMojo extends AbstractVDocMojo {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeployVDocMojo.class);
 
     /**
      * the current running plugin description
@@ -121,9 +125,9 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         fileFilter.addFileFilter(new SuffixFileFilter(".jar"));
 
         File[] earFiles = this.earFolder.listFiles((FileFilter) fileFilter);
-        this.getLog().info("Scan the vdoc.ear folder");
+        LOGGER.info("Scan the vdoc.ear folder");
         this.deployFiles(earFiles);
-        this.getLog().info("Scan the vdoc.ear/lib folder");
+        LOGGER.info("Scan the vdoc.ear/lib folder");
         File[] earLibFiles = new File(this.earFolder, "lib").listFiles((FileFilter) fileFilter);
         this.deployFiles(earLibFiles);
 
@@ -139,7 +143,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
      * @throws MojoExecutionException
      */
     protected void buildParentPom(ParentPOM pom) throws MojoExecutionException {
-        this.getLog().info("Create the " + pom + " pom file");
+        LOGGER.info("Create the " + pom + " pom file");
         try {
 
             ParentPOMGenerator generator = new ParentPOMGeneratorImpl(this.mavenHome, pom, this);
@@ -168,7 +172,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
             return;
         }
         for (File jar : vdocFiles) {
-            this.getLog().debug("parsing file : " + jar.getName());
+            LOGGER.debug("parsing file : " + jar.getName());
             DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(jar, this.repositoryId);
             deployFileConfiguration.setArtifactId(StringUtils.substringBefore(FilenameUtils.getBaseName(jar.getName()), "-suite"));
             deployFileConfiguration.setGroupId(this.targetGroupId);
@@ -176,7 +180,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
             deployFileConfiguration.setUniqueVersion(this.uniqueVersion);
             deployFileConfiguration.setUrl(this.repositoryUrl);
 
-            this.getLog().debug("search javadoc");
+            LOGGER.debug("search javadoc");
             try {
                 this.splitJar(deployFileConfiguration);
                 this.dependencies.add(deployFileConfiguration);
@@ -186,7 +190,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
             } finally {
                 if (this.deleteSplittedJar) {
-                    this.getLog().debug("delete javadoc jar");
+                    LOGGER.debug("delete javadoc jar");
                     if (deployFileConfiguration.getJavadoc() != null) {
                         deployFileConfiguration.getJavadoc().delete();
                     }
@@ -212,7 +216,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
             cmd.add(0, "-X");
             cmd.add(0, new File(this.mavenHome, "/bin/mvn" + (OSUtils.isWindows() ? ".bat" : "")).getAbsolutePath());
 
-            this.getLog().info(cmd.toString());
+            LOGGER.info(cmd.toString());
 
             ProcessBuilder builder = new ProcessBuilder(cmd);
             Process process = builder.start();

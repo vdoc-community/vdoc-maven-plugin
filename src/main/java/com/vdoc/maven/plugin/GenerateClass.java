@@ -13,6 +13,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -31,6 +33,8 @@ import java.util.zip.ZipInputStream;
  */
 @Mojo(name = "generate-classes", threadSafe = true)
 public class GenerateClass extends AbstractVDocMojo {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenerateClass.class);
 
     /**
      * the VDoc url where found data model
@@ -104,10 +108,10 @@ public class GenerateClass extends AbstractVDocMojo {
             }
 
         } catch (JAXBException e) {
-            getLog().error("Can't init the JAXB context : ", e);
+            LOGGER.error("Can't init the JAXB context : ", e);
             throw new MojoExecutionException("Can't init the JAXB context : " + e.getMessage());
         } catch (IOException | URISyntaxException e) {
-            getLog().error("Can't join the VDoc server : ", e);
+            LOGGER.error("Can't join the VDoc server : ", e);
             if (failOnError) {
                 throw new MojoExecutionException("Can't join the VDoc server : " + e.getMessage());
             }
@@ -115,7 +119,7 @@ public class GenerateClass extends AbstractVDocMojo {
             try {
                 httpClient.close();
             } catch (IOException e) {
-                getLog().error("Http client can't be closed : ", e);
+                LOGGER.error("Http client can't be closed : ", e);
             }
         }
 
@@ -148,7 +152,7 @@ public class GenerateClass extends AbstractVDocMojo {
 
         AuthenticateQuery response = (AuthenticateQuery) unmarshaller.unmarshal(tokenResponse.getEntity().getContent());
 
-        getLog().info("token is : " + response.getBody().getToken().getKey());
+        LOGGER.info("token is : " + response.getBody().getToken().getKey());
         return response;
     }
 
@@ -166,7 +170,7 @@ public class GenerateClass extends AbstractVDocMojo {
             // reading until read returns 0 or less.
             File targetFile = new File(this.project.getCompileSourceRoots().iterator().next(), entry.getName());
             targetFile.getParentFile().mkdirs();
-            getLog().info("Create file : " + targetFile.getPath());
+            LOGGER.info("Create file : " + targetFile.getPath());
             try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
                 int len;
                 while ((len = stream.read(buffer)) > 0) {

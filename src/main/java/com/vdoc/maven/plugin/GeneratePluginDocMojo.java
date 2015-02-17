@@ -13,6 +13,8 @@ import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
@@ -21,6 +23,8 @@ import java.io.*;
  */
 @Mojo(name = "generate-plugin-doc", threadSafe = false)
 public class GeneratePluginDocMojo extends AbstractMojo {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeneratePluginDocMojo.class);
 
     /**
      * the current running plugin description
@@ -76,7 +80,7 @@ public class GeneratePluginDocMojo extends AbstractMojo {
             cfg.setIncompatibleImprovements(Configuration.VERSION_2_3_21);  // FreeMarker 2.3.20
 
             // copy the template from jar freemaker can't read stream
-            getLog().debug("get the template localy.");
+            LOGGER.debug("get the template localy.");
             String ftlName = "mojo-doc.ftl";
             try (
                     InputStream input = getClass().getClassLoader().getResourceAsStream("documentation/" + ftlName);
@@ -86,11 +90,11 @@ public class GeneratePluginDocMojo extends AbstractMojo {
                 outputStream.flush();
             }
 
-            getLog().debug("Parse the  ftl.");
+            LOGGER.debug("Parse the  ftl.");
             Template temp = cfg.getTemplate(ftlName);
 
             for (MojoDescriptor mojoDescriptor : pluginDescriptor.getMojos()) {
-                getLog().info("Build documentation into " + this.outputDirectory.getAbsolutePath() + "/" + mojoDescriptor.getGoal() + ".html");
+                LOGGER.info("Build documentation into " + this.outputDirectory.getAbsolutePath() + "/" + mojoDescriptor.getGoal() + ".html");
                 File pom = new File(this.outputDirectory, mojoDescriptor.getGoal() + ".html");
                 try (Writer out = new FileWriter(pom)) {
                     temp.process(mojoDescriptor, out);
