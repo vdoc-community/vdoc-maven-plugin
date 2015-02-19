@@ -11,10 +11,8 @@ import com.vdoc.maven.plugin.utils.OSUtils;
 import com.vdoc.maven.plugin.utils.StreamGobbler;
 import com.vdoc.maven.plugin.utils.impl.SLF4JLoggerAdapter;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.AndFileFilter;
-import org.apache.commons.io.filefilter.OrFileFilter;
-import org.apache.commons.io.filefilter.PrefixFileFilter;
-import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.apache.commons.io.IOCase;
+import org.apache.commons.io.filefilter.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.maven.execution.MavenSession;
@@ -47,10 +45,10 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     protected PluginDescriptor pluginDescriptor;
 
     /**
-     * the VDoc ear folder (prefer the configurator's ear to avoid upload not needed jar)
+     * the VDoc home folder
      */
-    @Parameter(property = "earFolder", required = true)
-    protected File earFolder;
+    @Parameter(property = "vdocHome", required = true)
+    protected File vdocHome;
 
     /**
      * the VDoc upload version
@@ -108,12 +106,12 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
         if (this.mavenHome == null) {
             String mavenEnv = System.getenv("M2_HOME");
-            Validate.notEmpty(mavenEnv, "M2_HOME is not set you can used the maven-home configuration!");
+            Validate.notEmpty(mavenEnv, "M2_HOME is not set you can used the -DmavenHome property!");
             this.mavenHome = new File(mavenEnv);
         }
 
         if (!this.mavenHome.exists()) {
-            throw new IllegalArgumentException("maven home (M2_HOME or maven-home configuration) is set to bad location : " + this.mavenHome.getAbsolutePath());
+            throw new IllegalArgumentException("maven home (M2_HOME or mavenHome) is set to bad location : " + this.mavenHome.getAbsolutePath());
         }
 
         OrFileFilter prefixFileFilter = new OrFileFilter();
@@ -124,13 +122,24 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         fileFilter.addFileFilter(prefixFileFilter);
         fileFilter.addFileFilter(new SuffixFileFilter(".jar"));
 
-        File[] earFiles = this.earFolder.listFiles((FileFilter) fileFilter);
-        LOGGER.info("Scan the vdoc.ear folder");
+        LOGGER.info("Start scanning the vdoc from :" + this.vdocHome.getAbsolutePath());
+
+        LOGGER.info("Start reading vdoc.ear folder");
+        File vdocEar = new File(this.vdocHome, "/configurator/vdoc.ear/");
+        File[] earFiles = vdocEar.listFiles((FileFilter) fileFilter);
         this.deployFiles(earFiles);
-        LOGGER.info("Scan the vdoc.ear/lib folder");
-        File[] earLibFiles = new File(this.earFolder, "lib").listFiles((FileFilter) fileFilter);
+
+        LOGGER.info("Start reading vdoc.ear/lib folder");
+        File vdocEarLib = new File(vdocEar, "lib");
+        File[] earLibFiles = vdocEarLib.listFiles((FileFilter) fileFilter);
         this.deployFiles(earLibFiles);
 
+        LOGGER.info("Start reading jboss/bin/run.jar folder");
+        File jbossBin = new File(this.vdocHome, "jboss/bin");
+        File[] runJar = jbossBin.listFiles((FileFilter) new NameFileFilter("run.jar", IOCase.INSENSITIVE));
+        this.deployFiles(runJar);
+
+        LOGGER.info("Start building engineering parent pom");
         this.buildParentPom(ParentPOM.SDK);
         this.buildParentPom(ParentPOM.SDK_ADVANCED);
 
@@ -279,12 +288,20 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         this.session = session;
     }
 
-    public File getEarFolder() {
-        return this.earFolder;
+    public File getVdocHome() {
+        return this.vdocHome;
     }
 
-    public void setEarFolder(File earFolder) {
-        this.earFolder = earFolder;
+    public void setVdocHome(File vdocHome) {
+        this.vdocHome = vdocHome;
+    }
+
+    public boolean isDeleteSplittedJar() {
+        return this.deleteSplittedJar;
+    }
+
+    public void setDeleteSplittedJar(boolean deleteSplittedJar) {
+        this.deleteSplittedJar = deleteSplittedJar;
     }
 
     public String getTargetVersion() {
