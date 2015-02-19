@@ -155,7 +155,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             }
 
             if (this.includeTest) {
-                File testJar = AbstractVDocMojo.getJarFile(buildDirectory, jarName, "test");
+                File testJar = AbstractVDocMojo.getJarFile(buildDirectory, jarName, "tests");
                 if (testJar.exists()) {
                     this.compressDirectory(output, testJar, "lib/");
                 } else {
