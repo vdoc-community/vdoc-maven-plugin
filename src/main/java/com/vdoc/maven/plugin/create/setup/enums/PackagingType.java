@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.enums;
+package com.vdoc.maven.plugin.create.setup.enums;
 
 /**
  * Created by famaridon on 13/05/2014.

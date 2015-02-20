@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.pom.exception;
+package com.vdoc.maven.plugin.deploy.vdoc.pom.exception;
 
 /**
  * Created by famaridon on 15/02/15.

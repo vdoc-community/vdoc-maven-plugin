@@ -1,9 +1,7 @@
 package com.vdoc.maven.plugin;
 
 import com.vdoc.maven.plugin.beans.CompletedModule;
-import com.vdoc.maven.plugin.enums.PackagingType;
-import com.vdoc.maven.plugin.store.Store;
-import com.vdoc.maven.plugin.store.impl.DevEngStore;
+import com.vdoc.maven.plugin.create.setup.enums.PackagingType;
 import org.apache.commons.compress.archivers.*;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
@@ -11,7 +9,6 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -98,8 +95,6 @@ public class CreateSetupMojo extends AbstractVDocMojo {
      */
     @Parameter(defaultValue = "true")
     private List<String> dependenciesSetupsGroupIds;
-
-    private Store store;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -194,8 +189,6 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             // include linked apps
             if (includeDependenciesSetups) {
                 LOGGER.warn("not implemented");
-                this.store = new DevEngStore();
-                this.includeDependenciesSetups(output);
             }
 
 
@@ -218,30 +211,6 @@ public class CreateSetupMojo extends AbstractVDocMojo {
         }
 
         return metaAppOutput;
-    }
-
-    protected void includeDependenciesSetups(ZipArchiveOutputStream output) throws IOException, MojoExecutionException {
-        for (Dependency dependency : this.project.getDependencies()) {
-            LOGGER.debug(dependency.toString());
-            if (dependenciesSetupsGroupIds.contains(dependency.getGroupId())) {
-                LOGGER.info("Search setup for : " + dependency.toString());
-                try (InputStream inputStream = store.get(dependency)) {
-                    if (inputStream == null) {
-                        LOGGER.warn("No setup found for : " + dependency.toString());
-
-                    } else {
-                        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-                             ArchiveInputStream input = new ArchiveStreamFactory().createArchiveInputStream(bufferedInputStream)) {
-
-                            this.mergeArchive(output, input);
-
-                        } catch (ArchiveException e) {
-                            throw new MojoExecutionException("Can't read setup for : " + dependency, e);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**

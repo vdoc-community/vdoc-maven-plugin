@@ -1,7 +1,7 @@
-package com.vdoc.maven.plugin.pom;
+package com.vdoc.maven.plugin.deploy.vdoc.pom;
 
 import com.vdoc.maven.plugin.DeployVDocMojo;
-import com.vdoc.maven.plugin.pom.exception.PomGenerationException;
+import com.vdoc.maven.plugin.deploy.vdoc.pom.exception.PomGenerationException;
 import freemarker.ext.beans.BeansWrapperBuilder;
 import freemarker.template.*;
 import org.apache.commons.io.IOUtils;

@@ -1,6 +1,6 @@
 package com.vdoc.maven.plugin;
 
-import com.vdoc.maven.plugin.jaxb.beans.authenticate.AuthenticateQuery;
+import com.vdoc.maven.plugin.generate.classes.authenticate.jaxb.AuthenticateQuery;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;

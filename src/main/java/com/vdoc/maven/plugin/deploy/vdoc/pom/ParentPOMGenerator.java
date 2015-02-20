@@ -1,6 +1,6 @@
-package com.vdoc.maven.plugin.pom;
+package com.vdoc.maven.plugin.deploy.vdoc.pom;
 
-import com.vdoc.maven.plugin.pom.exception.PomGenerationException;
+import com.vdoc.maven.plugin.deploy.vdoc.pom.exception.PomGenerationException;
 
 import java.io.File;
 

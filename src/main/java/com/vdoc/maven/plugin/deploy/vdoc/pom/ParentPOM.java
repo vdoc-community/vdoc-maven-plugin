@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.pom;
+package com.vdoc.maven.plugin.deploy.vdoc.pom;
 
 /**
  * Created by famaridon on 15/02/15.

@@ -1,12 +1,12 @@
 package com.vdoc.maven.plugin;
 
-import com.vdoc.maven.plugin.beans.DeployFileConfiguration;
-import com.vdoc.maven.plugin.pom.ParentPOM;
-import com.vdoc.maven.plugin.pom.ParentPOMGenerator;
-import com.vdoc.maven.plugin.pom.ParentPOMGeneratorImpl;
-import com.vdoc.maven.plugin.pom.exception.PomGenerationException;
-import com.vdoc.maven.plugin.spliter.JarSplitter;
-import com.vdoc.maven.plugin.spliter.JarSplitterImpl;
+import com.vdoc.maven.plugin.deploy.vdoc.DeployFileConfiguration;
+import com.vdoc.maven.plugin.deploy.vdoc.pom.ParentPOM;
+import com.vdoc.maven.plugin.deploy.vdoc.pom.ParentPOMGenerator;
+import com.vdoc.maven.plugin.deploy.vdoc.pom.ParentPOMGeneratorImpl;
+import com.vdoc.maven.plugin.deploy.vdoc.pom.exception.PomGenerationException;
+import com.vdoc.maven.plugin.deploy.vdoc.spliter.JarSplitter;
+import com.vdoc.maven.plugin.deploy.vdoc.spliter.JarSplitterImpl;
 import com.vdoc.maven.plugin.utils.OSUtils;
 import com.vdoc.maven.plugin.utils.StreamGobbler;
 import com.vdoc.maven.plugin.utils.impl.SLF4JLoggerAdapter;
@@ -124,22 +124,22 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
         LOGGER.info("Start scanning the vdoc from :" + this.vdocHome.getAbsolutePath());
 
-        LOGGER.info("Start reading vdoc.ear folder");
+        LOGGER.debug("Start reading vdoc.ear folder");
         File vdocEar = new File(this.vdocHome, "/configurator/vdoc.ear/");
         File[] earFiles = vdocEar.listFiles((FileFilter) fileFilter);
         this.deployFiles(earFiles);
 
-        LOGGER.info("Start reading vdoc.ear/lib folder");
+        LOGGER.debug("Start reading vdoc.ear/lib folder");
         File vdocEarLib = new File(vdocEar, "lib");
         File[] earLibFiles = vdocEarLib.listFiles((FileFilter) fileFilter);
         this.deployFiles(earLibFiles);
 
-        LOGGER.info("Start reading jboss/bin/run.jar folder");
+        LOGGER.debug("Start reading jboss/bin/run.jar folder");
         File jbossBin = new File(this.vdocHome, "jboss/bin");
         File[] runJar = jbossBin.listFiles((FileFilter) new NameFileFilter("run.jar", IOCase.INSENSITIVE));
         this.deployFiles(runJar);
 
-        LOGGER.info("Start building engineering parent pom");
+        LOGGER.debug("Start building engineering parent pom");
         this.buildParentPom(ParentPOM.SDK);
         this.buildParentPom(ParentPOM.SDK_ADVANCED);
 

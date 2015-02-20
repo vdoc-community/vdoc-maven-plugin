@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.setup;
+package com.vdoc.maven.plugin.create.setup;
 
 /**
  * Created by famaridon on 04/02/15.

@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.spliter;
+package com.vdoc.maven.plugin.deploy.vdoc.spliter;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;

@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.spliter;
+package com.vdoc.maven.plugin.deploy.vdoc.spliter;
 
 import java.io.File;
 import java.io.IOException;

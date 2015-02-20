@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.jaxb.beans.authenticate;
+package com.vdoc.maven.plugin.generate.classes.authenticate.jaxb;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
