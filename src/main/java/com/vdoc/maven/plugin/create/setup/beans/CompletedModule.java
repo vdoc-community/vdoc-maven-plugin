@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.beans;
+package com.vdoc.maven.plugin.create.setup.beans;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
