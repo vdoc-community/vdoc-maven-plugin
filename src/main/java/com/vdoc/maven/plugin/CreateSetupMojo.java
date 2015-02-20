@@ -1,6 +1,6 @@
 package com.vdoc.maven.plugin;
 
-import com.vdoc.maven.plugin.beans.CompletedModule;
+import com.vdoc.maven.plugin.create.setup.beans.CompletedModule;
 import com.vdoc.maven.plugin.create.setup.enums.PackagingType;
 import org.apache.commons.compress.archivers.*;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
