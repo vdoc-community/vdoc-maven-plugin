@@ -1,336 +1,287 @@
 package com.vdoc.maven.plugin.deploy.vdoc;
 
+import com.vdoc.maven.plugin.deploy.vdoc.beans.Artifact;
+import com.vdoc.maven.plugin.deploy.vdoc.beans.Maven;
+import com.vdoc.maven.plugin.deploy.vdoc.beans.Repository;
+import com.vdoc.maven.plugin.deploy.vdoc.spliter.JarSplitter;
+import com.vdoc.maven.plugin.deploy.vdoc.spliter.JarSplitterImpl;
+import com.vdoc.maven.plugin.utils.ProcessOutputGobbler;
+import com.vdoc.maven.plugin.utils.impl.SLF4JLoggerAdapter;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.plugin.MojoFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Created by famaridon on 30/06/2014.
  */
-public class DeployFileConfiguration {
+public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseable, Closeable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeployFileConfiguration.class);
 
-	// Required Parameters
+    /**
+     * the repository to deploy
+     */
+    protected final Repository repository;
+    /**
+     * the artifact to deploy
+     */
+    protected final Artifact artifact;
+    /**
+     * the maven installation to use;
+     */
+    private final Maven maven;
 
-	/**
-	 * File to be deployed.
-	 * <b>User property is</b>: file.
-	 */
-	protected final File file;
-
-	/**
-	 * Server Id to map on the <id> under <server> section of settings.xml In most cases, this parameter will be required for authentication.
-	 * Default value is: remote-repository.
-	 * User property is: repositoryId.
-	 */
-	protected final String repositoryId;
-
-	// Optional Parameters
-
-	/**
-	 * ArtifactId of the artifact to be deployed. Retrieved from POM file if specified.
-	 * User property is: artifactId.
-	 */
-    protected String artifactId;
-
-	/**
-	 * Add classifier to the artifact
-	 * User property is: classifier.
-	 */
-    protected String classifier;
-
-	/**
-	 * A comma separated list of classifiers for each of the extra side artifacts to deploy. If there is a mis-match in the number of entries in files or types, then an error will be raised.
-	 * User property is: classifiers.
-	 */
-    protected String classifiers;
-
-	/**
-	 * Description passed to a generated POM file (in case of generatePom=true)
-	 * User property is: generatePom.description.
-	 */
-    protected String description;
-
-	/**
-	 * A comma separated list of files for each of the extra side artifacts to deploy. If there is a mis-match in the number of entries in types or classifiers, then an error will be raised.
-	 * User property is: files.
-	 */
-    protected String files;
-
-	/**
-	 * Upload a POM for this artifact. Will generate a default POM if none is supplied with the pomFile argument.
-	 * Default value is: true.
-	 * User property is: generatePom.
-	 */
-	protected boolean generatePom = true;
-
-	/**
-	 * GroupId of the artifact to be deployed. Retrieved from POM file if specified.
-	 * User property is: groupId.
-	 */
-    protected String groupId;
-
-	/**
-	 * The bundled API docs for the artifact.
-	 * User property is: javadoc.
-	 */
+    /**
+     * The bundled API docs for the artifact.
+     * User property is: javadoc.
+     */
     protected File javadoc;
 
-	/**
-	 * Type of the artifact to be deployed. Retrieved from the <packaging> element of the POM file if a POM file specified. Defaults to the file extension if it is not specified via command line or POM.
-	 * Maven uses two terms to refer to this datum: the <packaging> element for the entire POM,
-	 * and the <type> element in a dependency specification.
-	 * User property is: packaging.
-	 */
-    protected String packaging;
-
-	/**
-	 * Location of an existing POM file to be deployed alongside the main artifact, given by the ${file} parameter.
-	 * User property is: pomFile.
-	 */
-    protected File pomFile;
-
-	/**
-	 * Parameter used to control how many times a failed deployment will be retried before giving up and failing. If a value outside the range 1-10 is specified it will be pulled to the nearest value within the range 1-10.
-	 * Default value is: 1.
-	 * User property is: retryFailedDeploymentCount.
-	 */
-	protected int retryFailedDeploymentCount = 1;
-
-	/**
-	 * The bundled sources for the artifact.
-	 * User property is: sources.
-	 */
+    /**
+     * The bundled sources for the artifact.
+     * User property is: sources.
+     */
     protected File sources;
 
-	/**
-	 * A comma separated list of types for each of the extra side artifacts to deploy. If there is a mis-match in the number of entries in files or classifiers, then an error will be raised.
-	 * User property is: types.
-	 */
+    /**
+     * Upload a POM for this artifact. Will generate a default POM if none is supplied with the pomFile argument.
+     * Default value is: true.
+     * User property is: generatePom.
+     */
+    protected boolean generatePom = true;
+
+    /**
+     * Location of an existing POM file to be deployed alongside the main artifact, given by the ${file} parameter.
+     * User property is: pomFile.
+     */
+    protected File pomFile;
+
+    /**
+     * A comma separated list of files for each of the extra side artifacts to deploy. If there is a mis-match in the number of entries in types or classifiers, then an error will be raised.
+     * User property is: files.
+     */
+    protected String files;
+    /**
+     * A comma separated list of classifiers for each of the extra side artifacts to deploy. If there is a mis-match in the number of entries in files or types, then an error will be raised.
+     * User property is: classifiers.
+     */
+    protected String classifiers;
+    /**
+     * A comma separated list of types for each of the extra side artifacts to deploy. If there is a mis-match in the number of entries in files or classifiers, then an error will be raised.
+     * User property is: types.
+     */
     protected String types;
 
-	/**
-	 * Whether to deploy snapshots with a unique version or not.
-	 * Default value is: true.
-	 * User property is: uniqueVersion.
-	 */
-	protected boolean uniqueVersion = true;
-	/**
-	 * Parameter used to update the metadata to make the artifact as release.
-	 * Default value is: false.
-	 * User property is: updateReleaseInfo.
-	 */
-	protected boolean updateReleaseInfo = true;
-
-	/**
-	 * URL where the artifact will be deployed.
-	 * ie ( file:///C:/m2-repo or scp://host.com/path/to/repo )
-	 * User property is: url.
-	 */
-    protected String url;
-
-	/**
-	 * Version of the artifact to be deployed. Retrieved from POM file if specified.
-	 * User property is: version.
-	 */
-    protected String version;
-
-	public DeployFileConfiguration(File file, String repositoryId) {
+    public DeployFileConfiguration(Maven maven, Repository repository, Artifact artifact) {
         super();
-        this.file = file;
-        this.repositoryId = repositoryId;
+        this.maven = maven;
+        this.repository = repository;
+        this.artifact = artifact;
     }
 
-	public List<String> toCmd() {
-		List<String> strings = new ArrayList<>(2);
+    @Override
+    public Artifact call() throws MojoFailureException {
+        if ("pom".equalsIgnoreCase(FilenameUtils.getExtension(this.getArtifact().getFile().getName()))) {
+            LOGGER.info("Start splitting jar file.");
+            try (JarSplitter jarSplitter = new JarSplitterImpl(this.getArtifact().getFile())) {
 
-		Validate.notNull(this.file, "file is mandatory parameter.");
-		this.appendCmdFile(strings, "file", this.file);
-		Validate.notEmpty(this.repositoryId, "repositoryId is mandatory parameter.");
-        this.appendCmdString(strings, "repositoryId", this.repositoryId);
+                jarSplitter.split();
+                if (jarSplitter.getJar().exists()) {
+                    this.setJavadoc(jarSplitter.getJar());
+                }
+                if (jarSplitter.getSource().exists()) {
+                    this.setSources(jarSplitter.getSource());
+                }
+            } catch (IOException e) {
+                throw new MojoFailureException(e.getMessage(), e);
+            }
+        }
 
-		// Optional Parameters
-        this.appendCmdString(strings, "artifactId", this.artifactId);
-        this.appendCmdString(strings, "classifier", this.classifier);
-        this.appendCmdString(strings, "classifiers", this.classifiers);
-        this.appendCmdString(strings, "description", this.description);
-        this.appendCmdString(strings, "files", this.files);
-        this.appendCmdString(strings, "generatePom", Boolean.toString(this.generatePom));
-        this.appendCmdString(strings, "groupId", this.groupId);
-        this.appendCmdFile(strings, "javadoc", this.javadoc);
-        this.appendCmdString(strings, "packaging", this.packaging);
-        this.appendCmdFile(strings, "pomFile", this.pomFile);
-        this.appendCmdString(strings, "retryFailedDeploymentCount", Integer.toString(this.retryFailedDeploymentCount));
-        this.appendCmdFile(strings, "sources", this.sources);
-		this.appendCmdString(strings, "types", this.types);
-        this.appendCmdString(strings, "uniqueVersion", Boolean.toString(this.uniqueVersion));
-        this.appendCmdString(strings, "updateReleaseInfo", Boolean.toString(this.updateReleaseInfo));
-        this.appendCmdString(strings, "url", this.url);
-        this.appendCmdString(strings, "version", this.version);
+        // stop this thread correctly
+        if (Thread.currentThread().isInterrupted()) {
+            return this.getArtifact();
+        }
 
-		return strings;
-	}
+        try {
+            List<String> cmd = this.toDeployCmd();
+            LOGGER.info("Start deploying artifact : {}", cmd);
 
-	protected void appendCmdString(List<String> strings, String parameterName, String value) {
-		if (StringUtils.isNotEmpty(value)) {
+            ProcessBuilder builder = new ProcessBuilder(cmd);
+            Process process = builder.start();
+
+            ProcessOutputGobbler processOutputGobbler = new ProcessOutputGobbler(process, new SLF4JLoggerAdapter(LOGGER, this.getArtifact().getArtifactId()));
+            // start gobblers
+            processOutputGobbler.start();
+
+            int code = process.waitFor();
+            if (code != 0) {
+                throw new MojoFailureException("Artifact deployment fail : " + cmd);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            throw new MojoFailureException(e.getMessage(), e);
+        }
+
+        return this.getArtifact();
+    }
+
+    /**
+     * close only delete javadoc and source jar
+     *
+     * @throws IOException
+     */
+    @Override
+    public void close() throws IOException {
+        LOGGER.debug("Delete javadoc and source jar");
+        if (this.getJavadoc() != null) {
+            this.getJavadoc().delete();
+        }
+
+        if (this.getSources() != null) {
+            this.getSources().delete();
+        }
+    }
+
+    protected List<String> toDeployCmd() {
+        List<String> cmd = new ArrayList<>(2);
+
+        cmd.add(this.maven.getMvn().getAbsolutePath());
+        if (this.maven.getSession().getRequest().getLoggingLevel() == MavenExecutionRequest.LOGGING_LEVEL_DEBUG) {
+            cmd.add("-X");
+        }
+        cmd.add("deploy:deploy-file");
+
+        // Repository
+        this.appendCmdString(cmd, "retryFailedDeploymentCount", Integer.toString(this.getRepository().getRetryFailedDeploymentCount()));
+        this.appendCmdString(cmd, "uniqueVersion", Boolean.toString(this.getRepository().isUniqueVersion()));
+        this.appendCmdString(cmd, "updateReleaseInfo", Boolean.toString(this.getRepository().isUpdateReleaseInfo()));
+        this.appendCmdString(cmd, "url", this.getRepository().getUrl());
+
+        // Artifact
+        this.appendCmdString(cmd, "artifactId", this.getArtifact().getArtifactId());
+        this.appendCmdString(cmd, "groupId", this.getArtifact().getGroupId());
+        this.appendCmdString(cmd, "version", this.getArtifact().getVersion());
+        this.appendCmdString(cmd, "classifier", this.getArtifact().getClassifier());
+        this.appendCmdString(cmd, "description", this.getArtifact().getDescription());
+        this.appendCmdString(cmd, "packaging", this.getArtifact().getPackaging());
+
+        this.appendCmdFile(cmd, "javadoc", this.javadoc);
+        this.appendCmdFile(cmd, "sources", this.sources);
+
+        // files
+        this.appendCmdString(cmd, "files", this.files);
+        this.appendCmdString(cmd, "classifiers", this.classifiers);
+        this.appendCmdString(cmd, "types", this.types);
+
+        // POM
+        this.appendCmdString(cmd, "generatePom", Boolean.toString(this.generatePom));
+        if (!this.generatePom) {
+            this.appendCmdFile(cmd, "pomFile", this.pomFile);
+        }
+
+        return cmd;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if ((o == null) || (this.getClass() != o.getClass())) {
+            return false;
+        }
+        DeployFileConfiguration that = (DeployFileConfiguration) o;
+        return this.artifact.equals(that.artifact);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.artifact.hashCode();
+    }
+
+    protected void appendCmdString(List<String> strings, String parameterName, String value) {
+        if (StringUtils.isNotEmpty(value)) {
             strings.add("-D" + parameterName + '=' + value);
         }
-	}
+    }
 
-	protected void appendCmdFile(List<String> strings, String parameterName, File value) {
-		if (value != null) {
+    protected void appendCmdFile(List<String> strings, String parameterName, File value) {
+        if (value != null) {
             strings.add("-D" + parameterName + '=' + value.getAbsolutePath());
         }
-	}
-
-	public File getFile() {
-        return this.file;
     }
 
-	public String getRepositoryId() {
-        return this.repositoryId;
-    }
-
-	public String getArtifactId() {
-        return this.artifactId;
-    }
-
-	public void setArtifactId(String artifactId) {
-		this.artifactId = artifactId;
-	}
-
-	public String getClassifier() {
-        return this.classifier;
-    }
-
-	public void setClassifier(String classifier) {
-		this.classifier = classifier;
-	}
-
-	public String getClassifiers() {
+    public String getClassifiers() {
         return this.classifiers;
     }
 
-	public void setClassifiers(String classifiers) {
-		this.classifiers = classifiers;
-	}
-
-	public String getDescription() {
-        return this.description;
+    public void setClassifiers(String classifiers) {
+        this.classifiers = classifiers;
     }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public String getFiles() {
+    public String getFiles() {
         return this.files;
     }
 
-	public void setFiles(String files) {
-		this.files = files;
-	}
+    public void setFiles(String files) {
+        this.files = files;
+    }
 
-	public boolean isGeneratePom() {
+    public boolean isGeneratePom() {
         return this.generatePom;
     }
 
-	public void setGeneratePom(boolean generatePom) {
-		this.generatePom = generatePom;
-	}
-
-	public String getGroupId() {
-        return this.groupId;
+    public void setGeneratePom(boolean generatePom) {
+        this.generatePom = generatePom;
     }
 
-	public void setGroupId(String groupId) {
-		this.groupId = groupId;
-	}
-
-	public File getJavadoc() {
+    public File getJavadoc() {
         return this.javadoc;
     }
 
-	public void setJavadoc(File javadoc) {
-		this.javadoc = javadoc;
-	}
-
-	public String getPackaging() {
-        return this.packaging;
+    public void setJavadoc(File javadoc) {
+        this.javadoc = javadoc;
     }
 
-	public void setPackaging(String packaging) {
-		this.packaging = packaging;
-	}
-
-	public File getPomFile() {
+    public File getPomFile() {
         return this.pomFile;
     }
 
-	public void setPomFile(File pomFile) {
-		this.pomFile = pomFile;
-	}
-
-	public int getRetryFailedDeploymentCount() {
-        return this.retryFailedDeploymentCount;
+    public void setPomFile(File pomFile) {
+        this.pomFile = pomFile;
     }
 
-	public void setRetryFailedDeploymentCount(int retryFailedDeploymentCount) {
-		this.retryFailedDeploymentCount = retryFailedDeploymentCount;
-	}
-
-	public File getSources() {
+    public File getSources() {
         return this.sources;
     }
 
-	public void setSources(File sources) {
-		this.sources = sources;
-	}
+    public void setSources(File sources) {
+        this.sources = sources;
+    }
 
-	public String getTypes() {
+    public String getTypes() {
         return this.types;
     }
 
-	public void setTypes(String types) {
-		this.types = types;
-	}
-
-	public boolean isUniqueVersion() {
-        return this.uniqueVersion;
+    public void setTypes(String types) {
+        this.types = types;
     }
 
-	public void setUniqueVersion(boolean uniqueVersion) {
-		this.uniqueVersion = uniqueVersion;
-	}
-
-	public boolean isUpdateReleaseInfo() {
-        return this.updateReleaseInfo;
+    public Repository getRepository() {
+        return this.repository;
     }
 
-	public void setUpdateReleaseInfo(boolean updateReleaseInfo) {
-		this.updateReleaseInfo = updateReleaseInfo;
-	}
-
-	public String getUrl() {
-        return this.url;
+    public Artifact getArtifact() {
+        return this.artifact;
     }
-
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
-	public String getVersion() {
-        return this.version;
-    }
-
-	public void setVersion(String version) {
-		this.version = version;
-	}
-
 }

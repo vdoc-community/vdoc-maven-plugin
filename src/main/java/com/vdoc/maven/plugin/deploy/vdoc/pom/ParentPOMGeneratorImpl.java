@@ -1,12 +1,14 @@
 package com.vdoc.maven.plugin.deploy.vdoc.pom;
 
-import com.vdoc.maven.plugin.DeployVDocMojo;
+import com.vdoc.maven.plugin.deploy.vdoc.beans.Artifact;
+import com.vdoc.maven.plugin.deploy.vdoc.beans.Maven;
 import com.vdoc.maven.plugin.deploy.vdoc.pom.exception.PomGenerationException;
 import freemarker.ext.beans.BeansWrapperBuilder;
 import freemarker.template.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.util.Set;
 
 /**
  * Created by famaridon on 15/02/15.
@@ -16,24 +18,23 @@ public class ParentPOMGeneratorImpl implements ParentPOMGenerator {
     public static final Version fmVersion = Configuration.VERSION_2_3_20;
 
     private final Configuration configuration;
-    private final File workingDirectory;
     private final ParentPOM pom;
-    /**
-     * TODO : use interface or custom bean.
-     */
-    private final DeployVDocMojo mojo;
+    private final Maven maven;
+    private final String targetVersion;
+    private final Set<Artifact> artifactList;
 
-    public ParentPOMGeneratorImpl(File workingDirectory, ParentPOM pom, DeployVDocMojo mojo) throws IOException {
+    public ParentPOMGeneratorImpl(Maven maven, ParentPOM pom, Set<Artifact> artifactList, String targetVersion) throws IOException {
         super();
-        this.workingDirectory = workingDirectory;
+        this.maven = maven;
         this.pom = pom;
-        this.mojo = mojo;
+        this.artifactList = artifactList;
+        this.targetVersion = targetVersion;
 
         // build the full pom
         this.configuration = new Configuration(ParentPOMGeneratorImpl.fmVersion);
 
         // Specify the data source where the template files come from.
-        this.configuration.setDirectoryForTemplateLoading(this.workingDirectory);
+        this.configuration.setDirectoryForTemplateLoading(this.maven.getMavenHome());
 
         // Specify how templates will see the data-model. This is an advanced topic...
         // for now just use this:
@@ -66,9 +67,9 @@ public class ParentPOMGeneratorImpl implements ParentPOMGenerator {
             this.copyTemplateLocaly();
             Template temp = this.configuration.getTemplate(this.pom.getFtlName());
 
-            File pomFile = new File(this.workingDirectory, "pom.xml");
+            File pomFile = new File(this.maven.getMavenHome(), "pom.xml");
             try (Writer out = new FileWriter(pomFile)) {
-                temp.process(this.mojo, out);
+                temp.process(this, out);
                 out.flush();
             }
             return pomFile;
@@ -80,10 +81,22 @@ public class ParentPOMGeneratorImpl implements ParentPOMGenerator {
     public void copyTemplateLocaly() throws IOException {
         try (
                 InputStream input = this.getClass().getClassLoader().getResourceAsStream("pom/" + this.pom.getFtlName());
-                FileOutputStream outputStream = new FileOutputStream(new File(this.workingDirectory, this.pom.getFtlName()))
+                FileOutputStream outputStream = new FileOutputStream(new File(this.maven.getMavenHome(), this.pom.getFtlName()))
         ) {
             IOUtils.copy(input, outputStream);
             outputStream.flush();
         }
+    }
+
+    public Maven getMaven() {
+        return this.maven;
+    }
+
+    public String getTargetVersion() {
+        return this.targetVersion;
+    }
+
+    public Set<Artifact> getArtifactList() {
+        return this.artifactList;
     }
 }

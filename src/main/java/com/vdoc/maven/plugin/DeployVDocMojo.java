@@ -1,15 +1,14 @@
 package com.vdoc.maven.plugin;
 
 import com.vdoc.maven.plugin.deploy.vdoc.DeployFileConfiguration;
+import com.vdoc.maven.plugin.deploy.vdoc.beans.Artifact;
+import com.vdoc.maven.plugin.deploy.vdoc.beans.Maven;
+import com.vdoc.maven.plugin.deploy.vdoc.beans.Repository;
+import com.vdoc.maven.plugin.deploy.vdoc.beans.RepositoryBuilder;
 import com.vdoc.maven.plugin.deploy.vdoc.pom.ParentPOM;
 import com.vdoc.maven.plugin.deploy.vdoc.pom.ParentPOMGenerator;
 import com.vdoc.maven.plugin.deploy.vdoc.pom.ParentPOMGeneratorImpl;
 import com.vdoc.maven.plugin.deploy.vdoc.pom.exception.PomGenerationException;
-import com.vdoc.maven.plugin.deploy.vdoc.spliter.JarSplitter;
-import com.vdoc.maven.plugin.deploy.vdoc.spliter.JarSplitterImpl;
-import com.vdoc.maven.plugin.utils.OSUtils;
-import com.vdoc.maven.plugin.utils.StreamGobbler;
-import com.vdoc.maven.plugin.utils.impl.SLF4JLoggerAdapter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.*;
@@ -28,8 +27,11 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * this task can deploy all VDoc jars into a repository
@@ -38,11 +40,6 @@ import java.util.List;
 public class DeployVDocMojo extends AbstractVDocMojo {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeployVDocMojo.class);
-
-    /**
-     * the current running plugin description
-     */
-    protected PluginDescriptor pluginDescriptor;
 
     /**
      * the VDoc home folder
@@ -75,12 +72,6 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     protected String repositoryUrl;
 
     /**
-     * snapshot must used unique version
-     */
-    @Parameter(property = "uniqueVersion", required = false, defaultValue = "true")
-    protected boolean uniqueVersion;
-
-    /**
      * the maven home folder
      */
     @Parameter(property = "mavenHome", required = false, defaultValue = "${env.M2_HOME}")
@@ -102,18 +93,21 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        this.pluginDescriptor = (PluginDescriptor) this.getPluginContext().get("pluginDescriptor");
 
+        // Check maven home directory.
         if (this.mavenHome == null) {
             String mavenEnv = System.getenv("M2_HOME");
             Validate.notEmpty(mavenEnv, "M2_HOME is not set you can used the -DmavenHome property!");
             this.mavenHome = new File(mavenEnv);
         }
-
         if (!this.mavenHome.exists()) {
             throw new IllegalArgumentException("maven home (M2_HOME or mavenHome) is set to bad location : " + this.mavenHome.getAbsolutePath());
         }
+        Maven maven = new Maven(this.session, this.project, (PluginDescriptor) this.getPluginContext().get("pluginDescriptor"), this.mavenHome);
 
+        Repository repository = new RepositoryBuilder().setRepositoryId(this.repositoryId).setUrl(this.repositoryUrl).createRepository();
+
+        // create the file filter to include all jar whose strt with VDoc or VDP.
         OrFileFilter prefixFileFilter = new OrFileFilter();
         prefixFileFilter.addFileFilter(new PrefixFileFilter("VDoc"));
         prefixFileFilter.addFileFilter(new PrefixFileFilter("VDP"));
@@ -123,50 +117,47 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         fileFilter.addFileFilter(new SuffixFileFilter(".jar"));
 
         LOGGER.info("Start scanning the vdoc from :" + this.vdocHome.getAbsolutePath());
-
+        Set<File> fileSet = new HashSet<>();
         LOGGER.debug("Start reading vdoc.ear folder");
         File vdocEar = new File(this.vdocHome, "/configurator/vdoc.ear/");
-        File[] earFiles = vdocEar.listFiles((FileFilter) fileFilter);
-        this.deployFiles(earFiles);
+        fileSet.addAll(Arrays.asList(vdocEar.listFiles((FileFilter) fileFilter)));
 
         LOGGER.debug("Start reading vdoc.ear/lib folder");
         File vdocEarLib = new File(vdocEar, "lib");
-        File[] earLibFiles = vdocEarLib.listFiles((FileFilter) fileFilter);
-        this.deployFiles(earLibFiles);
+        fileSet.addAll(Arrays.asList(vdocEarLib.listFiles((FileFilter) fileFilter)));
 
         LOGGER.debug("Start reading jboss/bin/run.jar folder");
         File jbossBin = new File(this.vdocHome, "jboss/bin");
-        File[] runJar = jbossBin.listFiles((FileFilter) new NameFileFilter("run.jar", IOCase.INSENSITIVE));
-        this.deployFiles(runJar);
+        fileSet.addAll(Arrays.asList(jbossBin.listFiles((FileFilter) new NameFileFilter("run.jar", IOCase.INSENSITIVE))));
+
+        Set<Artifact> artifacts = this.deployFiles(maven, repository, fileSet);
 
         LOGGER.debug("Start building engineering parent pom");
-        this.buildParentPom(ParentPOM.SDK);
-        this.buildParentPom(ParentPOM.SDK_ADVANCED);
+        this.buildParentPom(maven, repository, artifacts, ParentPOM.SDK);
+        this.buildParentPom(maven, repository, artifacts, ParentPOM.SDK_ADVANCED);
 
     }
 
     /**
      * used to build a parent pom from ftl file
      *
-     * @param pom the pom file to generate.
+     * @param artifacts
+     * @param pom       the pom file to generate.
      * @throws MojoExecutionException
      */
-    protected void buildParentPom(ParentPOM pom) throws MojoExecutionException {
+    protected void buildParentPom(Maven maven, Repository repository, Set<Artifact> artifacts, ParentPOM pom) throws MojoExecutionException, MojoFailureException {
         LOGGER.info("Create the " + pom + " pom file");
         try {
 
-            ParentPOMGenerator generator = new ParentPOMGeneratorImpl(this.mavenHome, pom, this);
+            ParentPOMGenerator generator = new ParentPOMGeneratorImpl(maven, pom, artifacts, this.targetVersion);
 
             File pomFile = generator.generate();
 
-            DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(pomFile, this.repositoryId);
-            deployFileConfiguration.setArtifactId(pom.getArtifactId());
-            deployFileConfiguration.setGroupId("com.vdoc.engineering");
-            deployFileConfiguration.setVersion(this.targetVersion);
-            deployFileConfiguration.setUniqueVersion(this.uniqueVersion);
-            deployFileConfiguration.setUrl(this.repositoryUrl);
-            deployFileConfiguration.setPackaging("pom");
-            this.deployFileToNexus(deployFileConfiguration);
+            Artifact artifact = new Artifact(pomFile, pom.getArtifactId(), this.targetVersion, this.targetGroupId);
+
+            DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(maven, repository, artifact);
+
+            deployFileConfiguration.call();
 
             pomFile.renameTo(new File(this.mavenHome, pom.getArtifactId() + ".xml"));
 
@@ -176,100 +167,49 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         }
     }
 
-    protected void deployFiles(File[] vdocFiles) throws MojoExecutionException {
-        if (vdocFiles == null) {
-            return;
-        }
-        for (File jar : vdocFiles) {
-            LOGGER.debug("parsing file : " + jar.getName());
-            DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(jar, this.repositoryId);
-            deployFileConfiguration.setArtifactId(StringUtils.substringBefore(FilenameUtils.getBaseName(jar.getName()), "-suite"));
-            deployFileConfiguration.setGroupId(this.targetGroupId);
-            deployFileConfiguration.setVersion(this.targetVersion);
-            deployFileConfiguration.setUniqueVersion(this.uniqueVersion);
-            deployFileConfiguration.setUrl(this.repositoryUrl);
+    protected Set<Artifact> deployFiles(Maven maven, Repository repository, Set<File> fileSet) throws MojoExecutionException, MojoFailureException {
+        Validate.notEmpty(fileSet);
 
-            LOGGER.debug("search javadoc");
+        LOGGER.info("Prepare all file deployer");
+        Set<DeployFileConfiguration> deployFileSet = new HashSet<>(fileSet.size());
+        for (File jar : fileSet) {
+            String artifactId = StringUtils.substringBefore(FilenameUtils.getBaseName(jar.getName()), "-suite");
+            Artifact artifact = new Artifact(jar, artifactId, this.targetVersion, this.targetGroupId);
+            DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(maven, repository, artifact);
+            LOGGER.debug("Artifact deployer created for : " + artifact);
+            deployFileSet.add(deployFileConfiguration);
+        }
+
+        Set<Artifact> artifactSet = new HashSet<>(fileSet.size());
+        if (this.onlyParentPom) {
+            LOGGER.debug("Artifact deployment is disable with onlyParentPom option");
+            for (DeployFileConfiguration deployFileConfiguration : deployFileSet) {
+                artifactSet.add(deployFileConfiguration.getArtifact());
+            }
+        } else {
+            ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            List<Future<Artifact>> futures = null;
             try {
-                this.splitJar(deployFileConfiguration);
-                this.dependencies.add(deployFileConfiguration);
-                if (!this.onlyParentPom) {
-                    this.deployFileToNexus(deployFileConfiguration);
+                futures = executorService.invokeAll(deployFileSet);
+                for (Future<Artifact> future : futures) {
+                    Artifact finished = future.get();
+                    artifactSet.add(finished);
+                    LOGGER.info("{} successfully deploy", finished);
                 }
-
-            } finally {
-                if (this.deleteSplittedJar) {
-                    LOGGER.debug("delete javadoc jar");
-                    if (deployFileConfiguration.getJavadoc() != null) {
-                        deployFileConfiguration.getJavadoc().delete();
-                    }
-
-                    if (deployFileConfiguration.getSources() != null) {
-                        deployFileConfiguration.getSources().delete();
+            } catch (InterruptedException | ExecutionException e) {
+                // if 1 thread fail we must stop all
+                List<Runnable> newerStarted = executorService.shutdownNow();
+                for (DeployFileConfiguration deployFileConfiguration : deployFileSet) {
+                    if (!newerStarted.contains(deployFileConfiguration)) {
+                        LOGGER.error("The artifact {} was deployed before error.", deployFileConfiguration.getArtifact());
                     }
                 }
+                throw new MojoFailureException("an artifact deploy have fail!");
             }
-        }
-    }
-
-    /**
-     * // org.apache.maven.plugins:maven-deploy-plugin:2.8.1:deploy-file
-     *
-     * @param deployFileConfiguration
-     * @throws MojoExecutionException
-     */
-    protected void deployFileToNexus(DeployFileConfiguration deployFileConfiguration) throws MojoExecutionException {
-        try {
-            List<String> cmd = deployFileConfiguration.toCmd();
-            cmd.add(0, "deploy:deploy-file");
-            cmd.add(0, "-X");
-            cmd.add(0, new File(this.mavenHome, "/bin/mvn" + (OSUtils.isWindows() ? ".bat" : "")).getAbsolutePath());
-
-            LOGGER.info(cmd.toString());
-
-            ProcessBuilder builder = new ProcessBuilder(cmd);
-            Process process = builder.start();
-
-            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), new SLF4JLoggerAdapter(LOGGER, "error"), deployFileConfiguration.getArtifactId());
-
-            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), new SLF4JLoggerAdapter(LOGGER, "debug"), deployFileConfiguration.getArtifactId());
-
-            // start gobblers
-            outputGobbler.start();
-            errorGobbler.start();
-
-            int code = process.waitFor();
-            if (code != 0) {
-                throw new MojoExecutionException(deployFileConfiguration.toCmd().toString());
-            }
-
-        } catch (IOException | InterruptedException e) {
-            throw new MojoExecutionException(e.getMessage());
-        }
-    }
-
-    /**
-     * split jar into source and javadoc jar
-     *
-     * @param deployFileConfiguration the file descriptor to split
-     * @throws MojoExecutionException
-     */
-    protected void splitJar(DeployFileConfiguration deployFileConfiguration) throws MojoExecutionException {
-        try (JarSplitter jarSplitter = new JarSplitterImpl(deployFileConfiguration.getFile())) {
-
-            jarSplitter.split();
-            if (jarSplitter.getJar().exists()) {
-                deployFileConfiguration.setJavadoc(jarSplitter.getJar());
-            }
-            if (jarSplitter.getSource().exists()) {
-                deployFileConfiguration.setSources(jarSplitter.getSource());
-            }
-
-        } catch (IOException e) {
-            throw new MojoExecutionException("Jar can't be splitted!", e);
+            executorService.shutdown();
         }
 
-
+        return artifactSet;
     }
 
     public MavenProject getProject() {
@@ -328,14 +268,6 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         this.repositoryId = repositoryId;
     }
 
-    public boolean isUniqueVersion() {
-        return this.uniqueVersion;
-    }
-
-    public void setUniqueVersion(boolean uniqueVersion) {
-        this.uniqueVersion = uniqueVersion;
-    }
-
     public String getRepositoryUrl() {
         return this.repositoryUrl;
     }
@@ -358,14 +290,6 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
     public void setDependencies(List<DeployFileConfiguration> dependencies) {
         this.dependencies = dependencies;
-    }
-
-    public PluginDescriptor getPluginDescriptor() {
-        return this.pluginDescriptor;
-    }
-
-    public void setPluginDescriptor(PluginDescriptor pluginDescriptor) {
-        this.pluginDescriptor = pluginDescriptor;
     }
 
     public boolean isOnlyParentPom() {

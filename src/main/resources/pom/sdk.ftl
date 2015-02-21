@@ -1,3 +1,4 @@
+<#-- @ftlvariable name="" type="com.vdoc.maven.plugin.deploy.vdoc.pom.ParentPOMGeneratorImpl" -->
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -25,7 +26,7 @@
         <vdoc.version>${targetVersion}</vdoc.version>
         <project.build.sourceEncoding>cp1252</project.build.sourceEncoding>
         <skipTests>true</skipTests>
-        <vdoc-maven-plugin.version>${pluginDescriptor.version}</vdoc-maven-plugin.version>
+        <vdoc-maven-plugin.version>${maven.pluginDescriptor.version}</vdoc-maven-plugin.version>
     </properties>
 
     <dependencies>

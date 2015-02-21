@@ -1,3 +1,4 @@
+<#-- @ftlvariable name="" type="com.vdoc.maven.plugin.deploy.vdoc.pom.ParentPOMGeneratorImpl" -->
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -18,10 +19,10 @@
     </properties>
 
     <dependencies>
-	<#list dependencies as dependency >
+	<#list artifactList as artifact >
         <dependency>
-            <groupId>${dependency.groupId}</groupId>
-            <artifactId>${dependency.artifactId}</artifactId>
+            <groupId>${artifact.groupId}</groupId>
+            <artifactId>${artifact.artifactId}</artifactId>
             <version>${r"${vdoc.version}"}</version>
             <scope>provided</scope>
         </dependency>

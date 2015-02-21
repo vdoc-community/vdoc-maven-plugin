@@ -31,8 +31,9 @@ public class JarSplitterImpl implements JarSplitter {
     public JarSplitterImpl(File jar) throws IOException, FileNotFoundException {
         super();
         this.jar = jar;
-        this.javadoc = new File(jar.getParentFile(), FilenameUtils.getBaseName(jar.getName()) + "-javadoc.jar");
-        this.source = new File(jar.getParentFile(), FilenameUtils.getBaseName(jar.getName()) + "-source.jar");
+        String baseJarName = StringUtils.substringBefore(FilenameUtils.getBaseName(jar.getName()), "-suite");
+        this.javadoc = new File(jar.getParentFile(), baseJarName + "-javadoc.jar");
+        this.source = new File(jar.getParentFile(), baseJarName + "-source.jar");
 
         // open all stream
         // the jar jar
