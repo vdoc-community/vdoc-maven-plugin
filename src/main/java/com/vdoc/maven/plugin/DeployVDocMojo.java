@@ -107,7 +107,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
         Repository repository = new RepositoryBuilder().setRepositoryId(this.repositoryId).setUrl(this.repositoryUrl).createRepository();
 
-        // create the file filter to include all jar whose strt with VDoc or VDP.
+        // create the file filter to include all jar whose start with VDoc or VDP.
         OrFileFilter prefixFileFilter = new OrFileFilter();
         prefixFileFilter.addFileFilter(new PrefixFileFilter("VDoc"));
         prefixFileFilter.addFileFilter(new PrefixFileFilter("VDP"));
@@ -141,9 +141,12 @@ public class DeployVDocMojo extends AbstractVDocMojo {
     /**
      * used to build a parent pom from ftl file
      *
+     * @param maven
+     * @param repository
      * @param artifacts
      * @param pom       the pom file to generate.
      * @throws MojoExecutionException
+     * @throws org.apache.maven.plugin.MojoFailureException
      */
     protected void buildParentPom(Maven maven, Repository repository, Set<Artifact> artifacts, ParentPOM pom) throws MojoExecutionException, MojoFailureException {
         LOGGER.info("Create the " + pom + " pom file");

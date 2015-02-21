@@ -47,10 +47,10 @@ public class GeneratePluginDocMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
-        this.pluginDescriptor = ((PluginDescriptor) getPluginContext().get("pluginDescriptor"));
+        this.pluginDescriptor = (PluginDescriptor) this.getPluginContext().get("pluginDescriptor");
 
-        tempDirectory.mkdirs();
-        outputDirectory.mkdirs();
+        this.tempDirectory.mkdirs();
+        this.outputDirectory.mkdirs();
 
         try {
             // build the full pom
@@ -58,7 +58,7 @@ public class GeneratePluginDocMojo extends AbstractMojo {
 
             // Specify the data source where the template files come from. Here I set a
             // plain directory for it, but non-file-system are possible too:
-            cfg.setDirectoryForTemplateLoading(tempDirectory);
+            cfg.setDirectoryForTemplateLoading(this.tempDirectory);
 
             // Specify how templates will see the data-model. This is an advanced topic...
             // for now just use this:
@@ -83,7 +83,7 @@ public class GeneratePluginDocMojo extends AbstractMojo {
             LOGGER.debug("get the template localy.");
             String ftlName = "mojo-doc.ftl";
             try (
-                    InputStream input = getClass().getClassLoader().getResourceAsStream("documentation/" + ftlName);
+                    InputStream input = this.getClass().getClassLoader().getResourceAsStream("documentation/" + ftlName);
                     FileOutputStream outputStream = new FileOutputStream(new File(this.tempDirectory, ftlName))
             ) {
                 IOUtils.copy(input, outputStream);
@@ -93,8 +93,8 @@ public class GeneratePluginDocMojo extends AbstractMojo {
             LOGGER.debug("Parse the  ftl.");
             Template temp = cfg.getTemplate(ftlName);
 
-            for (MojoDescriptor mojoDescriptor : pluginDescriptor.getMojos()) {
-                LOGGER.info("Build documentation into " + this.outputDirectory.getAbsolutePath() + "/" + mojoDescriptor.getGoal() + ".html");
+            for (MojoDescriptor mojoDescriptor : this.pluginDescriptor.getMojos()) {
+                LOGGER.info("Build documentation into " + this.outputDirectory.getAbsolutePath() + '/' + mojoDescriptor.getGoal() + ".html");
                 File pom = new File(this.outputDirectory, mojoDescriptor.getGoal() + ".html");
                 try (Writer out = new FileWriter(pom)) {
                     temp.process(mojoDescriptor, out);

@@ -36,7 +36,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     /**
      * this is used to synchronize multiple modules build on multiple thread
      */
-    private static BlockingQueue<CompletedModule> completedModules = new LinkedBlockingQueue<>();
+    private static final BlockingQueue<CompletedModule> completedModules = new LinkedBlockingQueue<>();
     /**
      * this lock is used to avoid multiple includeOtherModules use.
      */
@@ -129,7 +129,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     public File createAppsSetup() throws IOException, MojoExecutionException {
 
         LOGGER.info("Create the VDoc apps packaging Zip.");
-        File vdocAppOutput = new File(buildDirectory, setupName + ".zip");
+        File vdocAppOutput = new File(this.buildDirectory, this.setupName + ".zip");
         try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(vdocAppOutput)) {
 
             LOGGER.debug("try to add custom resources ");
@@ -144,13 +144,13 @@ public class CreateSetupMojo extends AbstractVDocMojo {
                     }
                 }
             }
-            this.compressDirectory(output, AbstractVDocMojo.getJarFile(buildDirectory, jarName, null), "lib/");
+            this.compressDirectory(output, AbstractVDocMojo.getJarFile(this.buildDirectory, this.jarName, null), "lib/");
             if (this.libFolder.exists()) {
-                this.compressDirectory(output, libFolder, BASE_ZIP_FOLDER);
+                this.compressDirectory(output, this.libFolder, BASE_ZIP_FOLDER);
             }
 
             if (this.includeTest) {
-                File testJar = AbstractVDocMojo.getJarFile(buildDirectory, jarName, "tests");
+                File testJar = AbstractVDocMojo.getJarFile(this.buildDirectory, this.jarName, "tests");
                 if (testJar.exists()) {
                     this.compressDirectory(output, testJar, "lib/");
                 } else {
@@ -159,17 +159,17 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             }
 
             if (this.includeSource) {
-                this.compressDirectory(output, AbstractVDocMojo.getJarFile(buildDirectory, jarName, "source"), "lib/");
+                this.compressDirectory(output, AbstractVDocMojo.getJarFile(this.buildDirectory, this.jarName, "source"), "lib/");
             }
 
             if (this.includeJavadoc) {
-                this.compressDirectory(output, AbstractVDocMojo.getJarFile(buildDirectory, jarName, "javadoc"), "lib/");
+                this.compressDirectory(output, AbstractVDocMojo.getJarFile(this.buildDirectory, this.jarName, "javadoc"), "lib/");
             }
         }
 
 
         LOGGER.info("create the meta setup zip with apps, documentation, fix, ...");
-        File metaAppOutput = new File(buildDirectory, setupName + "-" + SETUP_SUFFIX + ".zip");
+        File metaAppOutput = new File(this.buildDirectory, this.setupName + '-' + SETUP_SUFFIX + ".zip");
         try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(metaAppOutput)) {
             for (Resource r : this.project.getResources()) {
                 File userAppsCustomFolder = new File(r.getDirectory() + "/../user_apps_custom/");
@@ -187,7 +187,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
 
             // include linked apps
-            if (includeDependenciesSetups) {
+            if (this.includeDependenciesSetups) {
                 LOGGER.warn("not implemented");
             }
 
@@ -237,7 +237,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             int modulesCount = this.getProject().getParent().getModules().size() - 1;
             do {
                 try {
-                    CompletedModule completedModule = completedModules.poll(includeOtherModulesTimeout, TimeUnit.SECONDS);
+                    CompletedModule completedModule = completedModules.poll(this.includeOtherModulesTimeout, TimeUnit.SECONDS);
                     LOGGER.info("Join module " + completedModule.getArtifactId() + " merge setup file " + completedModule.getSetup().getName());
 
                     if (completedModule.getSetup() == null) {
@@ -274,7 +274,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
      */
     protected void mergeArchive(ArchiveOutputStream to, ArchiveInputStream from) throws IOException, MojoExecutionException {
 
-        long offset = 0l;
+        long offset = 0L;
         ArchiveEntry entry;
         while ((entry = from.getNextEntry()) != null) {
             if (!to.canWriteEntryData(entry)) {
@@ -328,7 +328,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             File[] children = directory.listFiles();
             if (children != null) {
                 for (File child : children) {
-                    compressDirectory(outputStream, child, entryName + "/");
+                    this.compressDirectory(outputStream, child, entryName + '/');
                 }
             }
         }

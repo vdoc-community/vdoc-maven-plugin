@@ -78,20 +78,20 @@ public class GenerateClass extends AbstractVDocMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         // start by checking the url
-        if (!vdocURL.endsWith("/")) {
-            vdocURL = vdocURL + "/";
+        if (!this.vdocURL.endsWith("/")) {
+            this.vdocURL += '/';
         }
 
         CloseableHttpClient httpClient = HttpClients.createSystem();
         try {
             // we start by creating authentication key
-            AuthenticateQuery response = getAuthenticateToken(httpClient);
+            AuthenticateQuery response = this.getAuthenticateToken(httpClient);
 
             // we get the classes
-            URIBuilder uriBuilder = new URIBuilder(vdocURL + "navigation/classes/generator");
+            URIBuilder uriBuilder = new URIBuilder(this.vdocURL + "navigation/classes/generator");
             uriBuilder.addParameter("_AuthenticationKey", response.getBody().getToken().getKey());
-            uriBuilder.addParameter("customflag", Boolean.toString(customClasses));
-            uriBuilder.addParameter("baseflag", Boolean.toString(baseClasses));
+            uriBuilder.addParameter("customflag", Boolean.toString(this.customClasses));
+            uriBuilder.addParameter("baseflag", Boolean.toString(this.baseClasses));
 
 
             HttpGet getClasses = new HttpGet(uriBuilder.build());
@@ -112,7 +112,7 @@ public class GenerateClass extends AbstractVDocMojo {
             throw new MojoExecutionException("Can't init the JAXB context : " + e.getMessage());
         } catch (IOException | URISyntaxException e) {
             LOGGER.error("Can't join the VDoc server : ", e);
-            if (failOnError) {
+            if (this.failOnError) {
                 throw new MojoExecutionException("Can't join the VDoc server : " + e.getMessage());
             }
         } finally {
@@ -135,7 +135,7 @@ public class GenerateClass extends AbstractVDocMojo {
         query.getHeader().setLogin(this.login);
         query.getHeader().setPassword(this.password);
 
-        HttpPost tokenPost = new HttpPost(vdocURL + "navigation/flow?module=portal&cmd=authenticate");
+        HttpPost tokenPost = new HttpPost(this.vdocURL + "navigation/flow?module=portal&cmd=authenticate");
         tokenPost.setHeader("Content-Type", "application/xml");
 
         // set the body
@@ -182,7 +182,7 @@ public class GenerateClass extends AbstractVDocMojo {
     }
 
     public String getVdocURL() {
-        return vdocURL;
+        return this.vdocURL;
     }
 
     public void setVdocURL(String vdocURL) {
@@ -190,7 +190,7 @@ public class GenerateClass extends AbstractVDocMojo {
     }
 
     public String getLogin() {
-        return login;
+        return this.login;
     }
 
     public void setLogin(String login) {
@@ -198,7 +198,7 @@ public class GenerateClass extends AbstractVDocMojo {
     }
 
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     public void setPassword(String password) {
@@ -206,7 +206,7 @@ public class GenerateClass extends AbstractVDocMojo {
     }
 
     public boolean isBaseClasses() {
-        return baseClasses;
+        return this.baseClasses;
     }
 
     public void setBaseClasses(boolean baseClasses) {
@@ -214,7 +214,7 @@ public class GenerateClass extends AbstractVDocMojo {
     }
 
     public File getOutputDirectory() {
-        return outputDirectory;
+        return this.outputDirectory;
     }
 
     public void setOutputDirectory(File outputDirectory) {
@@ -222,7 +222,7 @@ public class GenerateClass extends AbstractVDocMojo {
     }
 
     public boolean isCustomClasses() {
-        return customClasses;
+        return this.customClasses;
     }
 
     public void setCustomClasses(boolean customClasses) {
@@ -230,7 +230,7 @@ public class GenerateClass extends AbstractVDocMojo {
     }
 
     public boolean isFailOnError() {
-        return failOnError;
+        return this.failOnError;
     }
 
     public void setFailOnError(boolean failOnError) {
