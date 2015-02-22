@@ -28,10 +28,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * this task can deploy all VDoc jars into a repository
@@ -126,8 +123,8 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         File vdocEarLib = new File(vdocEar, "lib");
         fileSet.addAll(Arrays.asList(vdocEarLib.listFiles((FileFilter) fileFilter)));
 
-        LOGGER.debug("Start reading jboss/bin/run.jar folder");
-        File jbossBin = new File(this.vdocHome, "jboss/bin");
+        LOGGER.debug("Start reading JBoss/bin/run.jar folder");
+        File jbossBin = new File(this.vdocHome, "JBoss/bin");
         fileSet.addAll(Arrays.asList(jbossBin.listFiles((FileFilter) new NameFileFilter("run.jar", IOCase.INSENSITIVE))));
 
         Set<Artifact> artifacts = this.deployFiles(maven, repository, fileSet);
@@ -144,7 +141,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
      * @param maven
      * @param repository
      * @param artifacts
-     * @param pom       the pom file to generate.
+     * @param pom        the pom file to generate.
      * @throws MojoExecutionException
      * @throws org.apache.maven.plugin.MojoFailureException
      */
@@ -157,13 +154,10 @@ public class DeployVDocMojo extends AbstractVDocMojo {
             File pomFile = generator.generate();
 
             Artifact artifact = new Artifact(pomFile, pom.getArtifactId(), this.targetVersion, this.targetGroupId);
-
             DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(maven, repository, artifact);
-
             deployFileConfiguration.call();
 
             pomFile.renameTo(new File(this.mavenHome, pom.getArtifactId() + ".xml"));
-
 
         } catch (IOException | PomGenerationException e) {
             throw new MojoExecutionException(e.getMessage(), e);
@@ -184,32 +178,51 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         }
 
         Set<Artifact> artifactSet = new HashSet<>(fileSet.size());
+        // If only parent pom we do not execute
         if (this.onlyParentPom) {
             LOGGER.debug("Artifact deployment is disable with onlyParentPom option");
             for (DeployFileConfiguration deployFileConfiguration : deployFileSet) {
                 artifactSet.add(deployFileConfiguration.getArtifact());
             }
         } else {
-            ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-            List<Future<Artifact>> futures = null;
+            ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            // use ExecutorCompletionService to take result when it's possible
+            CompletionService<Artifact> completionService = new ExecutorCompletionService<>(pool);
+            // join all deployment.
             try {
-                futures = executorService.invokeAll(deployFileSet);
-                for (Future<Artifact> future : futures) {
+                for (DeployFileConfiguration deployFileConfiguration : deployFileSet) {
+                    completionService.submit(deployFileConfiguration);
+                }
+
+                for (int i = 0; i < deployFileSet.size(); i++) {
+                    Future<Artifact> future = completionService.take();
                     Artifact finished = future.get();
                     artifactSet.add(finished);
                     LOGGER.info("{} successfully deploy", finished);
                 }
             } catch (InterruptedException | ExecutionException e) {
                 // if 1 thread fail we must stop all
-                List<Runnable> newerStarted = executorService.shutdownNow();
                 for (DeployFileConfiguration deployFileConfiguration : deployFileSet) {
-                    if (!newerStarted.contains(deployFileConfiguration)) {
-                        LOGGER.error("The artifact {} was deployed before error.", deployFileConfiguration.getArtifact());
+                    switch (deployFileConfiguration.getState()) {
+                        case STARTED:
+                        case FINISHED:
+                        case CANCELED:
+                            LOGGER.error("Artifact possibly deployed : {}", deployFileConfiguration.getArtifact());
+                            break;
+                        case FAILED:
+                        case NONE:
+                        default:
                     }
                 }
                 throw new MojoFailureException("an artifact deploy have fail!");
+            } finally {
+                pool.shutdown();
+                if (this.deleteSplittedJar) {
+                    for (DeployFileConfiguration deployFileConfiguration : deployFileSet) {
+                        deployFileConfiguration.close();
+                    }
+                }
             }
-            executorService.shutdown();
         }
 
         return artifactSet;

@@ -2,6 +2,7 @@ package com.vdoc.maven.plugin.deploy.vdoc.beans;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,11 +108,10 @@ public class Artifact {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("file", this.file)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE, null)
+                .append("groupId", this.groupId)
                 .append("artifactId", this.artifactId)
                 .append("version", this.version)
-                .append("groupId", this.groupId)
                 .toString();
     }
 

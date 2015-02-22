@@ -82,6 +82,8 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
      */
     protected String types;
 
+    private DeploymentState state = DeploymentState.NONE;
+
     public DeployFileConfiguration(Maven maven, Repository repository, Artifact artifact) {
         super();
         this.maven = maven;
@@ -91,6 +93,7 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
 
     @Override
     public Artifact call() throws MojoFailureException {
+        this.state = DeploymentState.STARTED;
         if ("pom".equalsIgnoreCase(FilenameUtils.getExtension(this.getArtifact().getFile().getName()))) {
             LOGGER.info("Start splitting jar file.");
             try (JarSplitter jarSplitter = new JarSplitterImpl(this.getArtifact().getFile())) {
@@ -109,12 +112,15 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
 
         // stop this thread correctly
         if (Thread.currentThread().isInterrupted()) {
+            this.state = DeploymentState.CANCELED;
+            LOGGER.info("Start deploying artifact : {}", this.getArtifact());
             return this.getArtifact();
         }
 
         try {
             List<String> cmd = this.toDeployCmd();
-            LOGGER.info("Start deploying artifact : {}", cmd);
+            LOGGER.info("Start deploying artifact : {}", this.getArtifact());
+            LOGGER.debug("Process command : {}", cmd);
 
             ProcessBuilder builder = new ProcessBuilder(cmd);
             Process process = builder.start();
@@ -125,13 +131,17 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
 
             int code = process.waitFor();
             if (code != 0) {
-                throw new MojoFailureException("Artifact deployment fail : " + cmd);
+                this.state = DeploymentState.FAILED;
+                LOGGER.error("Deployment fail for : {}", this.getArtifact());
+                throw new MojoFailureException("Artifact deployment fail : " + this.getArtifact());
             }
 
         } catch (IOException | InterruptedException e) {
-            throw new MojoFailureException(e.getMessage(), e);
+            this.state = DeploymentState.FAILED;
+            LOGGER.error("Deployment fail for : {}", this.getArtifact());
+            throw new MojoFailureException("Artifact deployment fail : " + this.getArtifact());
         }
-
+        this.state = DeploymentState.FINISHED;
         return this.getArtifact();
     }
 
@@ -141,7 +151,7 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
      * @throws IOException
      */
     @Override
-    public void close() throws IOException {
+    public void close() {
         LOGGER.debug("Delete javadoc and source jar");
         if (this.getJavadoc() != null) {
             this.getJavadoc().delete();
@@ -166,11 +176,13 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
         this.appendCmdString(cmd, "uniqueVersion", Boolean.toString(this.getRepository().isUniqueVersion()));
         this.appendCmdString(cmd, "updateReleaseInfo", Boolean.toString(this.getRepository().isUpdateReleaseInfo()));
         this.appendCmdString(cmd, "url", this.getRepository().getUrl());
+        this.appendCmdString(cmd, "repositoryId", this.getRepository().getRepositoryId());
 
         // Artifact
         this.appendCmdString(cmd, "artifactId", this.getArtifact().getArtifactId());
         this.appendCmdString(cmd, "groupId", this.getArtifact().getGroupId());
         this.appendCmdString(cmd, "version", this.getArtifact().getVersion());
+        this.appendCmdFile(cmd, "file", this.getArtifact().getFile());
         this.appendCmdString(cmd, "classifier", this.getArtifact().getClassifier());
         this.appendCmdString(cmd, "description", this.getArtifact().getDescription());
         this.appendCmdString(cmd, "packaging", this.getArtifact().getPackaging());
@@ -283,5 +295,9 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
 
     public Artifact getArtifact() {
         return this.artifact;
+    }
+
+    public DeploymentState getState() {
+        return this.state;
     }
 }
