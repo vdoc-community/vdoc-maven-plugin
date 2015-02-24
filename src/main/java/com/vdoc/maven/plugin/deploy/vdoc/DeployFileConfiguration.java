@@ -94,7 +94,7 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
     @Override
     public Artifact call() throws MojoFailureException {
         this.state = DeploymentState.STARTED;
-        if ("pom".equalsIgnoreCase(FilenameUtils.getExtension(this.getArtifact().getFile().getName()))) {
+        if ("jar".equalsIgnoreCase(FilenameUtils.getExtension(this.getArtifact().getFile().getName()))) {
             LOGGER.info("Start splitting jar file.");
             try (JarSplitter jarSplitter = new JarSplitterImpl(this.getArtifact().getFile())) {
 
