@@ -196,9 +196,11 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
         this.appendCmdString(cmd, "types", this.types);
 
         // POM
-        this.appendCmdString(cmd, "generatePom", Boolean.toString(this.generatePom));
-        if (!this.generatePom) {
-            this.appendCmdFile(cmd, "pomFile", this.pomFile);
+        if (!"pom".equalsIgnoreCase(this.getArtifact().getPackaging())) {
+            this.appendCmdString(cmd, "generatePom", Boolean.toString(this.generatePom));
+            if (!this.generatePom) {
+                this.appendCmdFile(cmd, "pomFile", this.pomFile);
+            }
         }
 
         return cmd;

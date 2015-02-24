@@ -153,7 +153,8 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
             File pomFile = generator.generate();
 
-            Artifact artifact = new Artifact(pomFile, pom.getArtifactId(), this.targetVersion, this.targetGroupId);
+            Artifact artifact = new Artifact(pomFile, pom.getArtifactId(), this.targetVersion, "com.vdoc.engineering");
+            artifact.setPackaging("pom");
             DeployFileConfiguration deployFileConfiguration = new DeployFileConfiguration(maven, repository, artifact);
             deployFileConfiguration.call();
 
