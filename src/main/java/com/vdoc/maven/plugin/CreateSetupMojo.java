@@ -46,7 +46,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     /**
      * the VDoc home folder.
      */
-    @Parameter(required = true)
+    @Parameter(required = false)
     protected File vdocHome;
 
     /**
