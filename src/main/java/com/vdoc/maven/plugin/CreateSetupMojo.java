@@ -47,7 +47,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
      * the VDoc home folder if set the apps is copied into apps folder.
      */
     @Parameter(required = false)
-    protected File vdocHome;
+    private File vdocHome;
 
     /**
      * the project packaging type actually <b>APPS</b> is the only supported value.
@@ -436,5 +436,21 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
     public void setDependenciesSetupsGroupIds(List<String> dependenciesSetupsGroupIds) {
         this.dependenciesSetupsGroupIds = dependenciesSetupsGroupIds;
+    }
+
+    public File getVdocHome() {
+        return this.vdocHome;
+    }
+
+    public void setVdocHome(File vdocHome) {
+        this.vdocHome = vdocHome;
+    }
+
+    public long getIncludeOtherModulesTimeout() {
+        return this.includeOtherModulesTimeout;
+    }
+
+    public void setIncludeOtherModulesTimeout(long includeOtherModulesTimeout) {
+        this.includeOtherModulesTimeout = includeOtherModulesTimeout;
     }
 }
