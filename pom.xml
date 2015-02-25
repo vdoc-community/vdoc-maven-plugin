@@ -6,7 +6,7 @@
 
     <groupId>com.vdoc.maven</groupId>
     <artifactId>vdoc-maven-plugin</artifactId>
-    <version>14.2.2</version>
+    <version>14.2.3-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <dependencies>
@@ -123,23 +123,23 @@
                 </configuration>
             </plugin>
             <!--
-            <plugin>
-                <groupId>com.vdoc.maven</groupId>
-                <artifactId>vdoc-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <executions>
-                    <execution>
-                        <id>doc</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>generate-plugin-doc</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.basedir}/../vdoc-maven-plugin-gh-pages/</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+                        <plugin>
+                            <groupId>com.vdoc.maven</groupId>
+                            <artifactId>vdoc-maven-plugin</artifactId>
+                            <version>${project.version}</version>
+                            <executions>
+                                <execution>
+                                    <id>doc</id>
+                                    <phase>install</phase>
+                                    <goals>
+                                        <goal>generate-plugin-doc</goal>
+                                    </goals>
+                                    <configuration>
+                                        <outputDirectory>${project.basedir}/../vdoc-maven-plugin-gh-pages/</outputDirectory>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
             -->
         </plugins>
 
