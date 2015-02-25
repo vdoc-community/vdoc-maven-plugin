@@ -27,7 +27,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /**
@@ -85,8 +87,6 @@ public class DeployVDocMojo extends AbstractVDocMojo {
      */
     @Parameter(property = "deleteSplittedJar", required = false, defaultValue = "true")
     protected boolean deleteSplittedJar;
-
-    protected List<DeployFileConfiguration> dependencies = new ArrayList<>();
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -299,14 +299,6 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
     public void setMavenHome(File mavenHome) {
         this.mavenHome = mavenHome;
-    }
-
-    public List<DeployFileConfiguration> getDependencies() {
-        return this.dependencies;
-    }
-
-    public void setDependencies(List<DeployFileConfiguration> dependencies) {
-        this.dependencies = dependencies;
     }
 
     public boolean isOnlyParentPom() {
