@@ -21,78 +21,108 @@ weight: 2
 <dl class="dl-horizontal parameters">
     <dt class="required">buildDirectory</dt>
     <dd>Directory containing the generated JAR.
-        <ul>
+        <ul class="list-unstyled">
             <li><span class="type">java.io.File</span></li>
                 <li><span class="default-value">${project.build.directory}</span></li>
         </ul>
     </dd>
+    <dt class="">dependenciesSetupsGroupIds</dt>
+    <dd>dependencies setup should be merged into this project setup
+        <ul class="list-unstyled">
+            <li><span class="type">java.util.List</span></li>
+                <li><span class="default-value">true</span></li>
+        </ul>
+    </dd>
+    <dt class="">includeDependenciesSetups</dt>
+    <dd>dependencies setup should be merged into this project setup
+        <ul class="list-unstyled">
+            <li><span class="type">boolean</span></li>
+                <li><span class="default-value">true</span></li>
+        </ul>
+    </dd>
     <dt class="">includeJavadoc</dt>
     <dd>if true test javadoc should be included in setup
-        <ul>
+        <ul class="list-unstyled">
             <li><span class="type">boolean</span></li>
                 <li><span class="default-value">false</span></li>
         </ul>
     </dd>
     <dt class="">includeOtherModules</dt>
-    <dd>other modules should be merged into this project setup
-        <ul>
+    <dd>other modules should be merged into this project setup.<br>
+<b>Warning : </b> if you turn on this option it's highly recommended to used <a href="https://cwiki.apache.org/confluence/display/MAVEN/Parallel+builds+in+Maven+3" >Parallel builds</a>.<br>
+Else the module with this option set to true should be the last to be build (to avoid thread locking).
+        <ul class="list-unstyled">
             <li><span class="type">boolean</span></li>
                 <li><span class="default-value">false</span></li>
         </ul>
     </dd>
+    <dt class="">includeOtherModulesTimeout</dt>
+    <dd>how many time this thread should wait for other modules in second.
+        <ul class="list-unstyled">
+            <li><span class="type">long</span></li>
+                <li><span class="default-value">30</span></li>
+        </ul>
+    </dd>
     <dt class="">includeSource</dt>
     <dd>if true source jar should be included in setup
-        <ul>
+        <ul class="list-unstyled">
             <li><span class="type">boolean</span></li>
                 <li><span class="default-value">false</span></li>
         </ul>
     </dd>
     <dt class="">includeTest</dt>
     <dd>if true test jar should be included in setup
-        <ul>
+        <ul class="list-unstyled">
             <li><span class="type">boolean</span></li>
                 <li><span class="default-value">true</span></li>
         </ul>
     </dd>
     <dt class="">jarName</dt>
     <dd>Name of the generated JAR.
-        <ul>
+        <ul class="list-unstyled">
             <li><span class="type">java.lang.String</span></li>
                 <li><span class="default-value">${project.build.finalName}</span></li>
         </ul>
     </dd>
-    <dt class="required">libFolder</dt>
+    <dt class="">libFolder</dt>
     <dd>where found dependency jars
-        <ul>
+        <ul class="list-unstyled">
             <li><span class="type">java.io.File</span></li>
                 <li><span class="default-value">${project.build.directory}/lib</span></li>
         </ul>
     </dd>
     <dt class="">packagingType</dt>
     <dd>the project packaging type actually <b>APPS</b> is the only supported value.
-        <ul>
-            <li><span class="type">com.vdoc.maven.plugin.enums.PackagingType</span></li>
+        <ul class="list-unstyled">
+            <li><span class="type">com.vdoc.maven.plugin.create.setup.enums.PackagingType</span></li>
                 <li><span class="default-value">APPS</span></li>
         </ul>
     </dd>
     <dt class="required">project</dt>
     <dd>The Maven project.
-        <ul>
+        <ul class="list-unstyled">
             <li><span class="type">org.apache.maven.project.MavenProject</span></li>
                 <li><span class="default-value">${project}</span></li>
         </ul>
     </dd>
     <dt class="required">session</dt>
     <dd>The Maven session.
-        <ul>
+        <ul class="list-unstyled">
             <li><span class="type">org.apache.maven.execution.MavenSession</span></li>
                 <li><span class="default-value">${session}</span></li>
         </ul>
     </dd>
     <dt class="required">setupName</dt>
     <dd>the apps file name without extension. The setup is suffixed with <b>-setup</b>.
-        <ul>
+        <ul class="list-unstyled">
             <li><span class="type">java.lang.String</span></li>
+
+        </ul>
+    </dd>
+    <dt class="">vdocHome</dt>
+    <dd>the VDoc home folder if set the apps is copied into apps folder.
+        <ul class="list-unstyled">
+            <li><span class="type">java.io.File</span></li>
 
         </ul>
     </dd>
