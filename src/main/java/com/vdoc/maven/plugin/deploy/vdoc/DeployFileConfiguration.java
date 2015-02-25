@@ -100,7 +100,7 @@ public class DeployFileConfiguration implements Callable<Artifact>, AutoCloseabl
 
                 jarSplitter.split();
                 if (jarSplitter.getJar().exists()) {
-                    this.setJavadoc(jarSplitter.getJar());
+                    this.setJavadoc(jarSplitter.getJavadoc());
                 }
                 if (jarSplitter.getSource().exists()) {
                     this.setSources(jarSplitter.getSource());
