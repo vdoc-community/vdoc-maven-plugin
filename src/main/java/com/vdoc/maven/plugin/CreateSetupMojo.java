@@ -44,7 +44,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     private static Boolean completedModulesLock = Boolean.FALSE;
 
     /**
-     * the VDoc home folder.
+     * the VDoc home folder if set the apps is copied into apps folder.
      */
     @Parameter(required = false)
     protected File vdocHome;
