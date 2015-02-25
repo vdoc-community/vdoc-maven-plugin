@@ -4,6 +4,7 @@ import com.vdoc.maven.plugin.create.setup.beans.CompletedModule;
 import com.vdoc.maven.plugin.create.setup.enums.PackagingType;
 import org.apache.commons.compress.archivers.*;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang3.NotImplementedException;
@@ -43,6 +44,12 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     private static Boolean completedModulesLock = Boolean.FALSE;
 
     /**
+     * the VDoc home folder.
+     */
+    @Parameter(required = true)
+    protected File vdocHome;
+
+    /**
      * the project packaging type actually <b>APPS</b> is the only supported value.
      */
     @Parameter(defaultValue = "APPS")
@@ -56,7 +63,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     /**
      * where found dependency jars
      */
-    @Parameter(required = true, defaultValue = "${project.build.directory}/lib")
+    @Parameter(defaultValue = "${project.build.directory}/lib")
     private File libFolder;
     /**
      * if true test jar should be included in setup
@@ -167,6 +174,10 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             }
         }
 
+        // #5 copy apps to vdoc
+        if ((this.vdocHome != null) && this.vdocHome.exists()) {
+            FileUtils.copyFileToDirectory(vdocAppOutput, new File(this.vdocHome, "apps"));
+        }
 
         LOGGER.info("create the meta setup zip with apps, documentation, fix, ...");
         File metaAppOutput = new File(this.buildDirectory, this.setupName + '-' + SETUP_SUFFIX + ".zip");
