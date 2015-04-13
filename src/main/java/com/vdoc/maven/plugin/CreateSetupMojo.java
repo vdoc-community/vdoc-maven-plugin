@@ -194,7 +194,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
             // add the packaged apps
             LOGGER.debug("add the packaged apps");
-            this.compressDirectory(output, vdocAppOutput, "apps/");
+            this.compressDirectory(output, vdocAppOutput, BASE_ZIP_FOLDER);
 
 
             // include linked apps
@@ -207,14 +207,14 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             File fix = new File(this.project.getBasedir(), "fix");
             if (fix.exists()) {
                 LOGGER.debug("add fix folder");
-                this.compressDirectory(output, fix, "fix/");
+                this.compressDirectory(output, fix, BASE_ZIP_FOLDER);
             }
 
             // include documentation
             File documentation = new File(this.project.getBasedir(), "documentation");
             if (documentation.exists()) {
                 LOGGER.debug("add documentation folder");
-                this.compressDirectory(output, documentation, "documentation/");
+                this.compressDirectory(output, documentation, BASE_ZIP_FOLDER);
             }
 
             this.includeOtherModules(output);
