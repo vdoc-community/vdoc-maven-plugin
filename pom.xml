@@ -149,12 +149,12 @@
         <repository>
             <id>vdoc</id>
             <name>VDoc internal releases repository</name>
-            <url>developers.visiativsoftware.com/nexus/content/repositories/releases/</url>
+            <url>https://developers.visiativsoftware.com/nexus/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
             <id>vdoc.snapshot</id>
             <name>VDoc internal snapshot repository</name>
-            <url>developers.visiativsoftware.com/nexus/content/repositories/snapshots/</url>
+            <url>https://developers.visiativsoftware.com/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
