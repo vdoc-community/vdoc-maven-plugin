@@ -194,7 +194,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
             // add the packaged apps
             LOGGER.debug("add the packaged apps");
-            this.compressDirectory(output, vdocAppOutput, BASE_ZIP_FOLDER);
+            this.compressDirectory(output, vdocAppOutput, BASE_ZIP_FOLDER + "apps/");
 
 
             // include linked apps
