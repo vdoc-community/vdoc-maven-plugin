@@ -56,6 +56,11 @@ public class HardDeployMojo extends AbstractVDocMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
+        if (this.vdocHome == null || !this.vdocHome.exists()) {
+            LOGGER.error("VDoc home not found or invalid path.");
+            return;
+        }
+
         this.vdocEAR = new File(this.vdocHome, "/JBoss/server/all/deploy/vdoc.ear/");
         File jar = getJarFile(buildDirectory, jarName, null);
         try {
