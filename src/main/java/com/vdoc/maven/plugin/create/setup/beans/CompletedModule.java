@@ -13,20 +13,20 @@ public class CompletedModule {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CompletedModule.class);
 
-	private final String artifactId;
-	private final File setup;
+    private final String artifactId;
+    private final File setup;
 
-	public CompletedModule(String artifactId, File setup) {
+    public CompletedModule(String artifactId, File setup) {
         super();
         this.artifactId = artifactId;
         this.setup = setup;
     }
 
-	public String getArtifactId() {
+    public String getArtifactId() {
         return this.artifactId;
     }
 
-	public File getSetup() {
+    public File getSetup() {
         return this.setup;
     }
 }

@@ -19,14 +19,14 @@
     </properties>
 
     <dependencies>
-	<#list artifactList as artifact >
+    <#list artifactList as artifact >
         <dependency>
             <groupId>${artifact.groupId}</groupId>
             <artifactId>${artifact.artifactId}</artifactId>
             <version>${r"${vdoc.version}"}</version>
             <scope>provided</scope>
         </dependency>
-	</#list>
+    </#list>
     </dependencies>
 
     <build>

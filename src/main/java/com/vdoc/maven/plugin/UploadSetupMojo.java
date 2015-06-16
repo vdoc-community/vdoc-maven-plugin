@@ -23,115 +23,115 @@ public class UploadSetupMojo extends AbstractVDocMojo {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UploadSetupMojo.class);
     /**
-	 * the user name with upload right
-	 */
-	@Parameter(required = true)
-	private String username;
-	/**
-	 * the user's password
-	 */
-	@Parameter(required = true)
-	private String password;
-	/**
-	 * the restFull store url
-	 */
-	@Parameter(required = true)
-	private String storeUrlHost;
-	/**
-	 * the http port
-	 */
-	@Parameter(required = true, defaultValue = "80")
-	private int storeUrlport;
-	/**
-	 * the vdoc version to build correct store path
-	 */
-	@Parameter(required = true)
-	private String vdocVersion;
-	/**
-	 * where the setup can be found
-	 */
-	@Parameter(required = true)
-	private String setupName;
+     * the user name with upload right
+     */
+    @Parameter(required = true)
+    private String username;
+    /**
+     * the user's password
+     */
+    @Parameter(required = true)
+    private String password;
+    /**
+     * the restFull store url
+     */
+    @Parameter(required = true)
+    private String storeUrlHost;
+    /**
+     * the http port
+     */
+    @Parameter(required = true, defaultValue = "80")
+    private int storeUrlport;
+    /**
+     * the vdoc version to build correct store path
+     */
+    @Parameter(required = true)
+    private String vdocVersion;
+    /**
+     * where the setup can be found
+     */
+    @Parameter(required = true)
+    private String setupName;
 
 
-	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
 
-		FTPClient ftpClient = new FTPClient();
+        FTPClient ftpClient = new FTPClient();
 
-		try {
-			ftpClient.connect(storeUrlHost, storeUrlport);
+        try {
+            ftpClient.connect(storeUrlHost, storeUrlport);
 
-			// After connection attempt, you should check the reply code to verify
-			// success.
-			int reply = ftpClient.getReplyCode();
+            // After connection attempt, you should check the reply code to verify
+            // success.
+            int reply = ftpClient.getReplyCode();
 
-			if (!FTPReply.isPositiveCompletion(reply)) {
-				ftpClient.disconnect();
+            if (!FTPReply.isPositiveCompletion(reply)) {
+                ftpClient.disconnect();
                 LOGGER.error("FTP server refused connection.");
                 throw new MojoFailureException("FTP server refused connection.");
-			}
+            }
 
-			ftpClient.login(username, password);
+            ftpClient.login(username, password);
 
-			// build the correct path
-			safeChangeDirectory(ftpClient, this.project.getGroupId());
-			safeChangeDirectory(ftpClient, this.project.getArtifactId());
-			safeChangeDirectory(ftpClient, this.vdocVersion);
-			safeChangeDirectory(ftpClient, this.project.getVersion());
+            // build the correct path
+            safeChangeDirectory(ftpClient, this.project.getGroupId());
+            safeChangeDirectory(ftpClient, this.project.getArtifactId());
+            safeChangeDirectory(ftpClient, this.vdocVersion);
+            safeChangeDirectory(ftpClient, this.project.getVersion());
 
-			// upload file
-			try (InputStream input = new FileInputStream(new File(this.buildDirectory, setupName))) {
-				ftpClient.storeFile(setupName, input);
-			}
+            // upload file
+            try (InputStream input = new FileInputStream(new File(this.buildDirectory, setupName))) {
+                ftpClient.storeFile(setupName, input);
+            }
 
-			ftpClient.logout();
+            ftpClient.logout();
 
-		} catch (IOException e) {
-			throw new MojoFailureException(e.getMessage());
-		}
+        } catch (IOException e) {
+            throw new MojoFailureException(e.getMessage());
+        }
 
 
-	}
+    }
 
-	protected void safeChangeDirectory(FTPClient ftpClient, String directory) throws IOException, MojoExecutionException {
-		if (!ftpClient.changeWorkingDirectory(directory)) {
-			if (!ftpClient.makeDirectory(directory)) {
-				throw new MojoExecutionException("can't create folder " + directory + " in " + ftpClient.printWorkingDirectory());
-			}
-			ftpClient.changeWorkingDirectory(directory);
-		}
-	}
+    protected void safeChangeDirectory(FTPClient ftpClient, String directory) throws IOException, MojoExecutionException {
+        if (!ftpClient.changeWorkingDirectory(directory)) {
+            if (!ftpClient.makeDirectory(directory)) {
+                throw new MojoExecutionException("can't create folder " + directory + " in " + ftpClient.printWorkingDirectory());
+            }
+            ftpClient.changeWorkingDirectory(directory);
+        }
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getUsername() {
+        return username;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public String getStoreUrlHost() {
-		return storeUrlHost;
-	}
+    public String getStoreUrlHost() {
+        return storeUrlHost;
+    }
 
-	public void setStoreUrlHost(String storeUrlHost) {
-		this.storeUrlHost = storeUrlHost;
-	}
+    public void setStoreUrlHost(String storeUrlHost) {
+        this.storeUrlHost = storeUrlHost;
+    }
 
-	public int getStoreUrlport() {
-		return storeUrlport;
-	}
+    public int getStoreUrlport() {
+        return storeUrlport;
+    }
 
-	public void setStoreUrlport(int storeUrlport) {
-		this.storeUrlport = storeUrlport;
-	}
+    public void setStoreUrlport(int storeUrlport) {
+        this.storeUrlport = storeUrlport;
+    }
 }

@@ -20,79 +20,79 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractVDocMojo.class);
 
-	private static final String WILDCARD_WEB_APP = FilenameUtils.separatorsToSystem("*custom/webapp*");
+    private static final String WILDCARD_WEB_APP = FilenameUtils.separatorsToSystem("*custom/webapp*");
 
-	/**
-	 * a {@Link FileFilter} to select all file in custom directory but not webapp sub folder
-	 */
-	public final FileFilter notWebAppFolderFileFilter;
+    /**
+     * a {@Link FileFilter} to select all file in custom directory but not webapp sub folder
+     */
+    public final FileFilter notWebAppFolderFileFilter;
 
-	/**
-	 * The Maven project.
-	 */
-	@Parameter(defaultValue = "${project}", required = true, readonly = true)
-	protected MavenProject project;
-	/**
-	 * The Maven session.
-	 */
-	@Parameter(defaultValue = "${session}", required = true, readonly = true)
-	protected MavenSession session;
+    /**
+     * The Maven project.
+     */
+    @Parameter(defaultValue = "${project}", required = true, readonly = true)
+    protected MavenProject project;
+    /**
+     * The Maven session.
+     */
+    @Parameter(defaultValue = "${session}", required = true, readonly = true)
+    protected MavenSession session;
 
-	/**
-	 * Name of the generated JAR.
-	 */
-	@Parameter(defaultValue = "${project.build.finalName}")
-	protected String jarName;
-	/**
-	 * Directory containing the generated JAR.
-	 */
-	@Parameter(defaultValue = "${project.build.directory}", required = true)
-	protected File buildDirectory;
+    /**
+     * Name of the generated JAR.
+     */
+    @Parameter(defaultValue = "${project.build.finalName}")
+    protected String jarName;
+    /**
+     * Directory containing the generated JAR.
+     */
+    @Parameter(defaultValue = "${project.build.directory}", required = true)
+    protected File buildDirectory;
 
-	protected AbstractVDocMojo() {
+    protected AbstractVDocMojo() {
         super();
         this.notWebAppFolderFileFilter = new FileFilter() {
             @Override
             public boolean accept(File file) {
-				return !FilenameUtils.wildcardMatch(file.getAbsolutePath(), WILDCARD_WEB_APP, IOCase.INSENSITIVE);
-			}
-		};
+                return !FilenameUtils.wildcardMatch(file.getAbsolutePath(), WILDCARD_WEB_APP, IOCase.INSENSITIVE);
+            }
+        };
         StaticLoggerBinder.getSingleton().setLog(this.getLog());
     }
 
-	/**
-	 * clone from maven jar plugin.
-	 * <p/>
-	 * svn : http://svn.apache.org/repos/asf/maven/plugins/tags/maven-jar-plugin-2.5
-	 *
-	 * @param basedir
-	 * @param finalName
-	 * @param classifier
-	 * @return
-	 */
-	protected static File getJarFile(File basedir, String finalName, String classifier) {
-		if (classifier == null) {
-			classifier = "";
-		} else if (!classifier.trim().isEmpty() && !classifier.startsWith("-")) {
-			classifier = "-" + classifier;
+    /**
+     * clone from maven jar plugin.
+     * <p/>
+     * svn : http://svn.apache.org/repos/asf/maven/plugins/tags/maven-jar-plugin-2.5
+     *
+     * @param basedir
+     * @param finalName
+     * @param classifier
+     * @return
+     */
+    protected static File getJarFile(File basedir, String finalName, String classifier) {
+        if (classifier == null) {
+            classifier = "";
+        } else if (!classifier.trim().isEmpty() && !classifier.startsWith("-")) {
+            classifier = "-" + classifier;
         }
 
-		return new File(basedir, finalName + classifier + ".jar");
-	}
+        return new File(basedir, finalName + classifier + ".jar");
+    }
 
-	public MavenProject getProject() {
+    public MavenProject getProject() {
         return this.project;
     }
 
-	public MavenSession getSession() {
+    public MavenSession getSession() {
         return this.session;
     }
 
-	public File getBuildDirectory() {
+    public File getBuildDirectory() {
         return this.buildDirectory;
     }
 
-	public String getJarName() {
+    public String getJarName() {
         return this.jarName;
     }
 

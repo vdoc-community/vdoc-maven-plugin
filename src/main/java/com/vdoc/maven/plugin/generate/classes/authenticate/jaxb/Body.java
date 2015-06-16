@@ -7,14 +7,14 @@ import javax.xml.bind.annotation.XmlElement;
  */
 public class Body {
 
-	protected Token token;
+    protected Token token;
 
-	@XmlElement
-	public Token getToken() {
-		return token;
-	}
+    @XmlElement
+    public Token getToken() {
+        return token;
+    }
 
-	public void setToken(Token token) {
-		this.token = token;
-	}
+    public void setToken(Token token) {
+        this.token = token;
+    }
 }

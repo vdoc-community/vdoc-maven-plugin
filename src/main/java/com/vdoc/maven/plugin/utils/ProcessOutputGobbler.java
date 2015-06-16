@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 
 /**
  * Gob any process output to the specified {@link com.vdoc.maven.plugin.utils.GobblerAdapter}.<br>
- *     default stream if log into default gobblerAdapter {@link com.vdoc.maven.plugin.utils.enums.LogLevel}. The error stream is always log with LogLevel.ERROR
+ * default stream if log into default gobblerAdapter {@link com.vdoc.maven.plugin.utils.enums.LogLevel}. The error stream is always log with LogLevel.ERROR
  * Created by famaridon on 04/07/2014.
  */
 public class ProcessOutputGobbler extends Thread {

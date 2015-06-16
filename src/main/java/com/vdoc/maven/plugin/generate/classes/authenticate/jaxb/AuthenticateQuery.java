@@ -8,27 +8,27 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "authenticate")
 public class AuthenticateQuery {
-	protected Header header = new Header();
-	protected Body body;
+    protected Header header = new Header();
+    protected Body body;
 
-	public AuthenticateQuery() {
-	}
+    public AuthenticateQuery() {
+    }
 
-	@XmlElement
-	public Header getHeader() {
-		return header;
-	}
+    @XmlElement
+    public Header getHeader() {
+        return header;
+    }
 
-	public void setHeader(Header header) {
-		this.header = header;
-	}
+    public void setHeader(Header header) {
+        this.header = header;
+    }
 
-	@XmlElement
-	public Body getBody() {
-		return body;
-	}
+    @XmlElement
+    public Body getBody() {
+        return body;
+    }
 
-	public void setBody(Body body) {
-		this.body = body;
-	}
+    public void setBody(Body body) {
+        this.body = body;
+    }
 }
