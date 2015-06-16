@@ -73,8 +73,8 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
 	protected static File getJarFile(File basedir, String finalName, String classifier) {
 		if (classifier == null) {
 			classifier = "";
-        } else if (classifier.trim().isEmpty() && !classifier.startsWith("-")) {
-            classifier = "-" + classifier;
+		} else if (!classifier.trim().isEmpty() && !classifier.startsWith("-")) {
+			classifier = "-" + classifier;
         }
 
 		return new File(basedir, finalName + classifier + ".jar");

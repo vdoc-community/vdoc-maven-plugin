@@ -56,7 +56,8 @@ public class HardDeployMojo extends AbstractVDocMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
-        if (this.vdocHome == null || !this.vdocHome.exists()) {
+        this.getProject().getFile();
+        if ((this.vdocHome == null) || !this.vdocHome.exists() || this.getProject().getFile().equals(vdocHome)) {
             LOGGER.error("VDoc home not found or invalid path.");
             return;
         }
