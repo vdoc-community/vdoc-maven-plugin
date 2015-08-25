@@ -54,7 +54,7 @@ public class GeneratePluginDocMojo extends AbstractMojo {
 
         try {
             // build the full pom
-            Configuration cfg = new Configuration(Configuration.VERSION_2_3_21);
+            Configuration cfg = new Configuration(Configuration.VERSION_2_3_22);
 
             // Specify the data source where the template files come from. Here I set a
             // plain directory for it, but non-file-system are possible too:
@@ -62,7 +62,7 @@ public class GeneratePluginDocMojo extends AbstractMojo {
 
             // Specify how templates will see the data-model. This is an advanced topic...
             // for now just use this:
-            BeansWrapperBuilder wrapperBuilder = new BeansWrapperBuilder(Configuration.VERSION_2_3_21);
+            BeansWrapperBuilder wrapperBuilder = new BeansWrapperBuilder(Configuration.VERSION_2_3_22);
             wrapperBuilder.setStrict(false);
             cfg.setObjectWrapper(wrapperBuilder.build());
 

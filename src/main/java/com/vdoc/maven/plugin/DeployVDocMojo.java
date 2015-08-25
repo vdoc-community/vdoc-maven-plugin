@@ -112,6 +112,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         AndFileFilter fileFilter = new AndFileFilter();
         fileFilter.addFileFilter(prefixFileFilter);
         fileFilter.addFileFilter(new SuffixFileFilter(".jar"));
+        fileFilter.addFileFilter(new NotFileFilter(new NameFileFilter("VDocSDKClient-suite.jar")));
 
         LOGGER.info("Start scanning the vdoc from :" + this.vdocHome.getAbsolutePath());
         Set<File> fileSet = new HashSet<>();

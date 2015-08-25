@@ -283,6 +283,25 @@ public class CreateSetupMojo extends AbstractVDocMojo {
      * @throws IOException
      * @throws MojoExecutionException
      */
+    protected void mergeArchive(ArchiveOutputStream to, File from) throws IOException, MojoExecutionException {
+        try (FileInputStream fileInputStream = new FileInputStream(from);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+             ArchiveInputStream input = new ArchiveStreamFactory().createArchiveInputStream(bufferedInputStream)) {
+
+            this.mergeArchive(to, input);
+        } catch (ArchiveException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * copy any entry of the <b>from</b> archive into the <b>to</b>.
+     *
+     * @param to   the output archive
+     * @param from the source archive
+     * @throws IOException
+     * @throws MojoExecutionException
+     */
     protected void mergeArchive(ArchiveOutputStream to, ArchiveInputStream from) throws IOException, MojoExecutionException {
 
         long offset = 0L;
@@ -322,6 +341,11 @@ public class CreateSetupMojo extends AbstractVDocMojo {
         // we must remove first / for base archive entry else we get a blank directory.
         if (base.startsWith("/")) {
             base = StringUtils.substring(base, 1);
+        }
+        // ignore all files whose start with ~
+        if (directory.isFile() && directory.getName().startsWith("~")) {
+            LOGGER.debug("File ignored : " + directory);
+            return;
         }
 
         String entryName = base + directory.getName();

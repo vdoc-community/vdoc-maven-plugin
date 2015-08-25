@@ -8,6 +8,8 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,6 +21,7 @@ import java.io.IOException;
  * Created by famaridon on 10/02/15.
  */
 public class JarSplitterImpl implements JarSplitter {
+    private static final Logger LOG = LoggerFactory.getLogger(JarSplitterImpl.class);
 
     private final File jar;
     private final JarArchiveInputStream jarInputStream;
@@ -62,7 +65,7 @@ public class JarSplitterImpl implements JarSplitter {
             } else if (archiveEntry.getName().endsWith(".java")) {
                 this.appendSource(archiveEntry);
             } else {
-//                getLog().debug("class : " + archiveEntry.getName());
+                LOG.debug("class : " + archiveEntry.getName());
                 if (archiveEntry.getSize() > 0) {
                     if (archiveEntry.getSize() != this.jarInputStream.skip(archiveEntry.getSize())) {
                         throw new IllegalStateException("the archive reader cursor have not skip the right number of byte!");
@@ -75,21 +78,21 @@ public class JarSplitterImpl implements JarSplitter {
     }
 
     protected void appendJavadoc(ArchiveEntry jarEntry) throws IOException {
-        //                getLog().debug("javadoc : " + archiveEntry.getName());
+        LOG.debug("append javadoc : {}", jarEntry.getName());
         ZipArchiveEntry toEntry = new ZipArchiveEntry(StringUtils.substringAfter(jarEntry.getName(), "apidocs/"));
         toEntry.setSize(jarEntry.getSize());
         this.copyEntry(this.javadocOutputStream, jarEntry, toEntry);
     }
 
     protected void appendSource(ArchiveEntry jarEntry) throws IOException {
-//                getLog().debug("source : " + archiveEntry.getName());
+        LOG.debug("append source : {}", jarEntry.getName());
         ZipArchiveEntry toEntry = new ZipArchiveEntry(jarEntry.getName());
         toEntry.setSize(jarEntry.getSize());
         this.copyEntry(this.sourceOutputStream, jarEntry, toEntry);
     }
 
     protected void copyEntry(ArchiveOutputStream toStream, ArchiveEntry jarEntry, ArchiveEntry toEntry) throws IOException {
-//        getLog().debug("merge entry : " + entry.getName());
+        LOG.debug("merge entry {} to {}", jarEntry.getName(), toEntry.getName());
         toStream.putArchiveEntry(toEntry);
         if (jarEntry.getSize() > 0) {
             long copied = IOUtils.copyLarge(this.jarInputStream, toStream, 0, jarEntry.getSize());
