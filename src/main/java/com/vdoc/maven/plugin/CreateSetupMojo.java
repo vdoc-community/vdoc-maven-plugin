@@ -13,9 +13,11 @@ import org.apache.commons.lang3.Validate;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +44,12 @@ public class CreateSetupMojo extends AbstractVDocMojo {
      * this lock is used to avoid multiple includeOtherModules use.
      */
     private static Boolean completedModulesLock = Boolean.FALSE;
+
+    /**
+     * Used for attaching the artifact in the project.
+     */
+    @Component
+    private MavenProjectHelper projectHelper;
 
     /**
      * the VDoc home folder if set the apps is copied into apps folder.
@@ -220,6 +228,9 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             this.includeOtherModules(output);
 
         }
+
+        LOGGER.debug("adding setup to project artifacts");
+        projectHelper.attachArtifact(this.project, "zip", SETUP_SUFFIX, metaAppOutput);
 
         return metaAppOutput;
     }
