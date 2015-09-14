@@ -7,9 +7,11 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -18,11 +20,20 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProjectHelper;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +55,24 @@ public class CreateSetupMojo extends AbstractVDocMojo {
      * this lock is used to avoid multiple includeOtherModules use.
      */
     private static Boolean completedModulesLock = Boolean.FALSE;
+
+    /**
+     * The entry point to Aether, i.e. the component doing all the work.
+     */
+    @Component
+    private RepositorySystem repoSystem;
+
+    /**
+     * The current repository/network configuration of Maven.
+     */
+    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
+    private RepositorySystemSession repoSession;
+
+    /**
+     * The project's remote repositories to use for the resolution of plugins and their dependencies.
+     */
+    @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true)
+    private List<RemoteRepository> remoteRepos;
 
     /**
      * Used for attaching the artifact in the project.
@@ -123,7 +152,6 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
         File createdSetup;
         try {
-
             switch (this.packagingType) {
                 case APPS:
                     createdSetup = this.createAppsSetup();
@@ -207,7 +235,38 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
             // include linked apps
             if (this.includeDependenciesSetups) {
-                LOGGER.warn("not implemented");
+
+                File file = new File(this.buildDirectory, "../apps");
+                File[] depApps = file.listFiles((FilenameFilter) new WildcardFileFilter("*-setup.zip"));
+                LOGGER.info("merge local apps");
+                if (depApps != null) {
+                    for (File depApp : depApps) {
+                        LOGGER.warn("merge {} apps.", depApp.getName());
+                        this.mergeArchive(output, depApp);
+                    }
+                }
+
+                LOGGER.warn("remote apps");
+                Set<org.eclipse.aether.artifact.Artifact> setupArtifactSet = new HashSet<>();
+                for (Artifact artifact : this.project.getDependencyArtifacts()) {
+                    if ("provided".equals(artifact.getScope()) && artifact.getGroupId().startsWith("com.vdoc")) {
+                        LOGGER.info("Try to get {}:{}:{}:{}:{}", artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion());
+                        // check for remote setup
+                        ArtifactRequest request = new ArtifactRequest();
+                        request.setArtifact(new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion()));
+                        request.setRepositories(remoteRepos);
+                        try {
+                            ArtifactResult result = repoSystem.resolveArtifact(repoSession, request);
+                            setupArtifactSet.add(result.getArtifact());
+                        } catch (ArtifactResolutionException e) {
+                            LOGGER.warn("No setup found for {}:{}:{}:{}:{}", artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion());
+                        }
+                    }
+                }
+                for (org.eclipse.aether.artifact.Artifact artifact : setupArtifactSet) {
+                    LOGGER.warn("merge {} apps.", artifact.getFile().getName());
+                    this.mergeArchive(output, artifact.getFile());
+                }
             }
 
 
@@ -323,9 +382,11 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             }
             LOGGER.debug("merge entry : " + entry.getName());
             to.putArchiveEntry(entry);
-            IOUtils.copyLarge(from, to, offset, entry.getSize());
+            if (entry.getSize() != 0) {
+                IOUtils.copyLarge(from, to, 0, entry.getSize());
+                offset += entry.getSize();
+            }
             to.closeArchiveEntry();
-            offset += entry.getSize();
         }
 
 
