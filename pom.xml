@@ -6,27 +6,30 @@
 
     <groupId>com.vdoc.maven</groupId>
     <artifactId>vdoc-maven-plugin</artifactId>
-    <version>14.2.4-SNAPSHOT</version>
+    <version>14.2.4</version>
     <packaging>maven-plugin</packaging>
+
+    <properties>
+        <maven-version>3.2.5</maven-version>
+        <maven-version-min>3.2</maven-version-min>
+    </properties>
 
     <dependencies>
         <!-- Maven plugin dependencies -->
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>[3.2.1,)</version>
+            <version>${maven-version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>[3.2.1,)</version>
+            <version>${maven-version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>[3.3,)</version>
+            <version>${maven-version-min}</version>
         </dependency>
 
         <!-- apache dependencies  -->
@@ -122,25 +125,6 @@
                     <uniqueVersion>true</uniqueVersion>
                 </configuration>
             </plugin>
-            <!--
-                        <plugin>
-                            <groupId>com.vdoc.maven</groupId>
-                            <artifactId>vdoc-maven-plugin</artifactId>
-                            <version>${project.version}</version>
-                            <executions>
-                                <execution>
-                                    <id>doc</id>
-                                    <phase>install</phase>
-                                    <goals>
-                                        <goal>generate-plugin-doc</goal>
-                                    </goals>
-                                    <configuration>
-                                        <outputDirectory>${project.basedir}/../vdoc-maven-plugin-gh-pages/</outputDirectory>
-                                    </configuration>
-                                </execution>
-                            </executions>
-                        </plugin>
-            -->
         </plugins>
 
     </build>
