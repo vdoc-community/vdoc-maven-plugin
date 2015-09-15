@@ -135,9 +135,13 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     @Parameter(defaultValue = "true")
     private boolean includeDependenciesSetups;
     /**
-     * dependencies setup should be merged into this project setup
+     * TODO :
      */
-    @Parameter(defaultValue = "true")
+    private Set<String> finalZipEntrys = new HashSet<>();
+
+    /**
+     *
+     */
     private List<String> dependenciesSetupsGroupIds;
 
     @Override
@@ -172,6 +176,23 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     public File createAppsSetup() throws IOException, MojoExecutionException {
 
         LOGGER.info("Create the VDoc apps packaging Zip.");
+        File vdocAppOutput = createAppsZip();
+
+        // #5 copy apps to vdoc
+        if ((this.vdocHome != null) && this.vdocHome.exists()) {
+            FileUtils.copyFileToDirectory(vdocAppOutput, new File(this.vdocHome, "apps"));
+        }
+
+        LOGGER.info("create the meta setup zip with apps, documentation, fix, ...");
+        File metaAppOutput = createMetaSetup(vdocAppOutput);
+
+        LOGGER.debug("adding setup to project artifacts");
+        projectHelper.attachArtifact(this.project, "zip", SETUP_SUFFIX, metaAppOutput);
+
+        return metaAppOutput;
+    }
+
+    protected File createAppsZip() throws IOException {
         File vdocAppOutput = new File(this.buildDirectory, this.setupName + ".zip");
         try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(vdocAppOutput)) {
 
@@ -209,13 +230,10 @@ public class CreateSetupMojo extends AbstractVDocMojo {
                 this.compressDirectory(output, AbstractVDocMojo.getJarFile(this.buildDirectory, this.jarName, "javadoc"), "lib/");
             }
         }
+        return vdocAppOutput;
+    }
 
-        // #5 copy apps to vdoc
-        if ((this.vdocHome != null) && this.vdocHome.exists()) {
-            FileUtils.copyFileToDirectory(vdocAppOutput, new File(this.vdocHome, "apps"));
-        }
-
-        LOGGER.info("create the meta setup zip with apps, documentation, fix, ...");
+    protected File createMetaSetup(File vdocAppOutput) throws IOException, MojoExecutionException {
         File metaAppOutput = new File(this.buildDirectory, this.setupName + '-' + SETUP_SUFFIX + ".zip");
         try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(metaAppOutput)) {
             for (Resource r : this.project.getResources()) {
@@ -236,37 +254,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             // include linked apps
             if (this.includeDependenciesSetups) {
 
-                File file = new File(this.buildDirectory, "../apps");
-                File[] depApps = file.listFiles((FilenameFilter) new WildcardFileFilter("*-setup.zip"));
-                LOGGER.info("merge local apps");
-                if (depApps != null) {
-                    for (File depApp : depApps) {
-                        LOGGER.warn("merge {} apps.", depApp.getName());
-                        this.mergeArchive(output, depApp);
-                    }
-                }
-
-                LOGGER.warn("remote apps");
-                Set<org.eclipse.aether.artifact.Artifact> setupArtifactSet = new HashSet<>();
-                for (Artifact artifact : this.project.getDependencyArtifacts()) {
-                    if ("provided".equals(artifact.getScope()) && artifact.getGroupId().startsWith("com.vdoc")) {
-                        LOGGER.info("Try to get {}:{}:{}:{}:{}", artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion());
-                        // check for remote setup
-                        ArtifactRequest request = new ArtifactRequest();
-                        request.setArtifact(new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion()));
-                        request.setRepositories(remoteRepos);
-                        try {
-                            ArtifactResult result = repoSystem.resolveArtifact(repoSession, request);
-                            setupArtifactSet.add(result.getArtifact());
-                        } catch (ArtifactResolutionException e) {
-                            LOGGER.warn("No setup found for {}:{}:{}:{}:{}", artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion());
-                        }
-                    }
-                }
-                for (org.eclipse.aether.artifact.Artifact artifact : setupArtifactSet) {
-                    LOGGER.warn("merge {} apps.", artifact.getFile().getName());
-                    this.mergeArchive(output, artifact.getFile());
-                }
+                includeDependenciesSetups(output);
             }
 
 
@@ -287,11 +275,41 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             this.includeOtherModules(output);
 
         }
-
-        LOGGER.debug("adding setup to project artifacts");
-        projectHelper.attachArtifact(this.project, "zip", SETUP_SUFFIX, metaAppOutput);
-
         return metaAppOutput;
+    }
+
+    protected void includeDependenciesSetups(ZipArchiveOutputStream output) throws IOException, MojoExecutionException {
+        File file = new File(this.buildDirectory, "../apps");
+        File[] depApps = file.listFiles((FilenameFilter) new WildcardFileFilter("*-setup.zip"));
+        LOGGER.info("merge local apps");
+        if (depApps != null) {
+            for (File depApp : depApps) {
+                LOGGER.warn("merge {} apps.", depApp.getName());
+                this.mergeArchive(output, depApp);
+            }
+        }
+
+        LOGGER.warn("remote apps");
+        Set<org.eclipse.aether.artifact.Artifact> setupArtifactSet = new HashSet<>();
+        for (Artifact artifact : this.project.getDependencyArtifacts()) {
+            if ("provided".equals(artifact.getScope()) && artifact.getGroupId().startsWith("com.vdoc")) {
+                LOGGER.info("Try to get {}:{}:{}:{}:{}", artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion());
+                // check for remote setup
+                ArtifactRequest request = new ArtifactRequest();
+                request.setArtifact(new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion()));
+                request.setRepositories(remoteRepos);
+                try {
+                    ArtifactResult result = repoSystem.resolveArtifact(repoSession, request);
+                    setupArtifactSet.add(result.getArtifact());
+                } catch (ArtifactResolutionException e) {
+                    LOGGER.warn("No setup found for {}:{}:{}:{}:{}", artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion());
+                }
+            }
+        }
+        for (org.eclipse.aether.artifact.Artifact artifact : setupArtifactSet) {
+            LOGGER.warn("merge {} apps.", artifact.getFile().getName());
+            this.mergeArchive(output, artifact.getFile());
+        }
     }
 
     /**
@@ -381,15 +399,15 @@ public class CreateSetupMojo extends AbstractVDocMojo {
                 throw new MojoExecutionException("Can't merge setup files!");
             }
             LOGGER.debug("merge entry : " + entry.getName());
-            to.putArchiveEntry(entry);
-            if (entry.getSize() != 0) {
-                IOUtils.copyLarge(from, to, 0, entry.getSize());
-                offset += entry.getSize();
+            if (this.finalZipEntrys.add(entry.getName())) {
+                to.putArchiveEntry(entry);
+                if (entry.getSize() != 0) {
+                    IOUtils.copyLarge(from, to, 0, entry.getSize());
+                    offset += entry.getSize();
+                }
+                to.closeArchiveEntry();
             }
-            to.closeArchiveEntry();
         }
-
-
     }
 
     /**
