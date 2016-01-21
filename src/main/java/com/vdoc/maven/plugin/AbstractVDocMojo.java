@@ -70,14 +70,14 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
      * @param classifier
      * @return
      */
-    protected static File getJarFile(File basedir, String finalName, String classifier) {
+    protected static File getJarFile(File basedir, String finalNameTest, String classifier) {
         if (classifier == null) {
             classifier = "";
         } else if (!classifier.trim().isEmpty() && !classifier.startsWith("-")) {
             classifier = "-" + classifier;
         }
 
-        return new File(basedir, finalName + classifier + ".jar");
+        return new File(basedir, finalNameTest + classifier + ".jar");
     }
 
     public MavenProject getProject() {
