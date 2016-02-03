@@ -196,6 +196,11 @@
                                 <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                                 <addClasspath>true</addClasspath>
                             </manifest>
+                            <manifestEntries>
+                                <Build-Time>${r"${maven.build.timestamp}"}</Build-Time>
+                                <Build-Maven>Maven ${r"${maven.version}"}</Build-Maven>
+                                <Build-Label>${r"${project.version}"}</Build-Label>
+                            </manifestEntries>
                         </archive>
                     </configuration>
                 </plugin>
