@@ -18,11 +18,6 @@
         <include.other.modules>false</include.other.modules>
     </properties>
 
-	<scm>
-		<connection>scm:svn:${r"${svn.url}"}/trunk</connection>
-		<developerConnection>scm:svn:${r"${svn.url}"}/trunk</developerConnection>
-	</scm>
-
     <dependencies>
     <#list artifactList as artifact >
         <dependency>
