@@ -128,7 +128,7 @@
                                 <configuration>
                                     <target>
                                         <copy todir="setup">
-                                            <fileset dir="${r"${project.build.directory}"}>
+                                            <fileset dir="${r"${project.build.directory}"}">
                                                 <include name="*-setup.zip" />
                                             </fileset>
                                         </copy>
