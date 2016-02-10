@@ -19,8 +19,8 @@
     </properties>
 
 	<scm>
-		<connection>scm:svn:${r"${svn.url}"}"/trunk</connection>
-		<developerConnection>scm:svn:${r"${svn.url}"}"/trunk</developerConnection>
+		<connection>scm:svn:${r"${svn.url}"}/trunk</connection>
+		<developerConnection>scm:svn:${r"${svn.url}"}/trunk</developerConnection>
 	</scm>
 
     <dependencies>
@@ -177,8 +177,8 @@
                         <version>2.5.3</version>
                         <configuration>
                             <preparationGoals>clean deploy</preparationGoals>
-                            <tagNameFormat>${r"@{project.artifactId}"} v${r"@{project.version}"} for ${r"${vdoc.version}"}"</tagNameFormat>
-                            <tagBase>${r"${svn.url}"}"/tags</tagBase>
+                            <tagNameFormat>${r"@{project.artifactId}"} v${r"@{project.version}"} for ${r"${vdoc.version}"}</tagNameFormat>
+                            <tagBase>${r"${svn.url}"}/tags</tagBase>
                         </configuration>
                     </plugin>
                 </plugins>
