@@ -4,7 +4,7 @@ package com.vdoc.maven.plugin.deploy.vdoc.pom;
  * Created by famaridon on 15/02/15.
  */
 public enum ParentPOM {
-    SDK("sdk"), SDK_ADVANCED("sdk.advanced");
+    SDK("sdk"), SDK_ADVANCED("sdk.advanced"), VDOC_SUITE("vdoc.suite");
 
     private final String ftlName;
     private final String artifactId;

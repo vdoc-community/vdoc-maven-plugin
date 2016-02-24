@@ -72,6 +72,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
 
     /**
      * the maven home folder
+     *
      */
     @Parameter(property = "mavenHome", required = false, defaultValue = "${env.M2_HOME}")
     protected File mavenHome;
@@ -133,6 +134,7 @@ public class DeployVDocMojo extends AbstractVDocMojo {
         LOGGER.debug("Start building engineering parent pom");
         this.buildParentPom(maven, repository, artifacts, ParentPOM.SDK);
         this.buildParentPom(maven, repository, artifacts, ParentPOM.SDK_ADVANCED);
+        this.buildParentPom(maven, repository, artifacts, ParentPOM.VDOC_SUITE);
 
     }
 
