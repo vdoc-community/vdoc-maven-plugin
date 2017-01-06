@@ -289,10 +289,10 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             }
         }
 
-        LOGGER.warn("remote apps");
+        LOGGER.info("remote apps");
         Set<org.eclipse.aether.artifact.Artifact> setupArtifactSet = new HashSet<>();
         for (Artifact artifact : this.project.getDependencyArtifacts()) {
-            if ("provided".equals(artifact.getScope()) && artifact.getGroupId().startsWith("com.vdoc")) {
+            if ("provided".equals(artifact.getScope()) && (artifact.getGroupId().startsWith("com.vdoc") || artifact.getGroupId().startsWith("com.moovapps"))) {
                 LOGGER.info("Try to get {}:{}:{}:{}:{}", artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion());
                 // check for remote setup
                 ArtifactRequest request = new ArtifactRequest();
