@@ -24,6 +24,7 @@
             <artifactId>VDocEAR</artifactId>
             <version>${r"${vdoc.version}"}</version>
             <scope>provided</scope>
+            <type>ear</type>
         </dependency>
     </dependencies>
 

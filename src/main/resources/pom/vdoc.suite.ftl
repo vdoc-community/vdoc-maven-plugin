@@ -16,6 +16,7 @@
 			<artifactId>VDocEAR</artifactId>
 			<version>${targetVersion}</version>
 			<scope>provided</scope>
+			<type>ear</type>
 		</dependency>
     </dependencies>
 
