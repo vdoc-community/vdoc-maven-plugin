@@ -1,6 +1,7 @@
 package com.vdoc.maven.plugin.deploy.vdoc.beans;
 
 import com.vdoc.maven.plugin.utils.OSUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.project.MavenProject;
@@ -27,7 +28,21 @@ public class Maven {
         this.pluginDescriptor = pluginDescriptor;
         this.project = project;
         this.session = session;
-        this.mavenHome = mavenHome;
+        // Check maven home directory.
+        if (mavenHome == null) {
+            String mavenEnv = System.getenv("M2_HOME");
+            Validate.notEmpty(mavenEnv, "M2_HOME is not set you can used the -DmavenHome property!");
+            this.mavenHome = new File(mavenEnv);
+        }
+        else
+        {
+            this.mavenHome = mavenHome;
+        }
+        if (!this.mavenHome.exists()) {
+            throw new IllegalArgumentException("maven home (M2_HOME or mavenHome) is set to bad location : " + this.mavenHome.getAbsolutePath());
+        }
+        
+        
         this.mvn = new File(this.mavenHome, "/bin/mvn" + (OSUtils.isWindows() ? ".bat" : ""));
     }
 
