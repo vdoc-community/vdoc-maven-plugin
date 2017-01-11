@@ -11,13 +11,12 @@
     <packaging>pom</packaging>
 
     <dependencies>
-    <#list artifactList as artifact >
-        <dependency>
-            <groupId>${artifact.groupId}</groupId>
-            <artifactId>${artifact.artifactId}</artifactId>
-            <version>${targetVersion}</version>
-        </dependency>
-    </#list>
+    	<dependency>
+			<groupId>com.axemble.vdoc</groupId>
+			<artifactId>VDocEAR</artifactId>
+			<version>${targetVersion}</version>
+			<scope>provided</scope>
+		</dependency>
     </dependencies>
 
 </project>

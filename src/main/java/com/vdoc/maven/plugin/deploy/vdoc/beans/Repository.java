@@ -3,6 +3,7 @@ package com.vdoc.maven.plugin.deploy.vdoc.beans;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.maven.model.DeploymentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,15 @@ public class Repository {
      * User property is: url.
      */
     protected String url;
+    
+    private Repository(DeploymentRepository repository) {
+        super();
+        this.repositoryId = repository.getId();
+        this.retryFailedDeploymentCount = 0;
+        this.uniqueVersion = repository.isUniqueVersion();
+        //this.updateReleaseInfo = repository.getReleases().isEnabled();
+        this.url = repository.getUrl();
+    }
 
     private Repository(String repositoryId, int retryFailedDeploymentCount, boolean uniqueVersion, boolean updateReleaseInfo, String url) {
         super();
@@ -55,6 +65,9 @@ public class Repository {
         this.url = Validate.notBlank(url);
     }
 
+    public static Repository createRepository(DeploymentRepository repository) {
+        return new Repository(repository);
+    }
     public static Repository createRepository(String repositoryId, int retryFailedDeploymentCount, boolean uniqueVersion, boolean updateReleaseInfo, String url) {
         return new Repository(repositoryId, retryFailedDeploymentCount, uniqueVersion, updateReleaseInfo, url);
     }
