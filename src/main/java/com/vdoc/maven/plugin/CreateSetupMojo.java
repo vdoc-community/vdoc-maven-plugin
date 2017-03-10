@@ -31,6 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -237,11 +240,14 @@ public class CreateSetupMojo extends AbstractVDocMojo {
         File metaAppOutput = new File(this.buildDirectory, this.setupName + '-' + SETUP_SUFFIX + ".zip");
         try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(metaAppOutput)) {
             for (Resource r : this.project.getResources()) {
-                File userAppsCustomFolder = new File(r.getDirectory() + "/../user_apps_custom/");
-                if (userAppsCustomFolder.isDirectory()) {
-                    File[] customFolders = new File(r.getDirectory() + "/../user_apps_custom/").listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
+                Path userAppsCustomFolder = Paths.get(r.getDirectory()).getParent().resolve("user_apps_custom");
+                LOGGER.info("looking for user_apps_custom in {}", userAppsCustomFolder);
+                if (Files.isDirectory(userAppsCustomFolder)) {
+                    LOGGER.info("user_apps_custom found {} add it's files into custom zip folder", userAppsCustomFolder);
+                    File[] customFolders = userAppsCustomFolder.toFile().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
                     for (File f : customFolders) {
                         this.compressDirectory(output, f, "custom/");
+                        LOGGER.debug("add folder {} to custom zip folder ", f);
                     }
                 }
             }
