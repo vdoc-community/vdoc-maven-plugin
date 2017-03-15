@@ -11,9 +11,7 @@ import java.nio.file.Path;
  * Created by famaridon on 15/03/2017.
  */
 public abstract class AbstractVDocEventListener implements FolderEventListener {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractVDocEventListener.class);
-	
+
 	protected final Path watchedFolder;
 	protected final Path vdocHome;
 	protected final Path ear;

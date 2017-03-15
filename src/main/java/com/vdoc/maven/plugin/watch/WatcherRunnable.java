@@ -67,6 +67,8 @@ public class WatcherRunnable implements Runnable {
 				valid = watchKey.reset();
 			}
 		} catch (InterruptedException e) {
+			// clean up state...
+			Thread.currentThread().interrupt();
 			throw new IllegalStateException("fail to tack watch!", e);
 		}
 		finally {

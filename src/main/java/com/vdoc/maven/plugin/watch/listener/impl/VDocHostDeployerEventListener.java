@@ -58,7 +58,6 @@ public class VDocHostDeployerEventListener extends AbstractVDocEventListener imp
 		catch (IOException e) {
 			LOGGER.error("Delete '{}' fail", path, e);
 		}
-		;
 	}
 	
 	@Override

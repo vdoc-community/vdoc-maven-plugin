@@ -1,12 +1,10 @@
 package com.vdoc.maven.plugin;
 
 import com.vdoc.maven.plugin.watch.WatcherRunnable;
-import com.vdoc.maven.plugin.watch.listener.impl.LoggerEventListener;
 import com.vdoc.maven.plugin.watch.listener.impl.VDocHostDeployerEventListener;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.slf4j.Logger;
@@ -71,6 +69,8 @@ public class WatchMojo extends AbstractVDocMojo {
 			}
 		}
 		catch (InterruptedException e) {
+			// clean up state...
+			Thread.currentThread().interrupt();
 			throw new MojoFailureException("Can't wait for completion", e);
 		}
 		finally {
