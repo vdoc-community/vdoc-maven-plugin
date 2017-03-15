@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 /**
  * this task is used to deploy a project to the target VDoc install.
  */
-@Mojo(name = "watch", threadSafe = true, defaultPhase = LifecyclePhase.PACKAGE)
+@Mojo(name = "watch", threadSafe = true)
 public class WatchMojo extends AbstractVDocMojo {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(GeneratePluginDocMojo.class);
@@ -60,8 +60,8 @@ public class WatchMojo extends AbstractVDocMojo {
 		try {
 			for (Path sourceCustom : this.sourceCustoms) {
 				WatcherRunnable runnable = new WatcherRunnable(sourceCustom);
-				runnable.addFolderEventListener(new LoggerEventListener());
 				runnable.addFolderEventListener(new VDocHostDeployerEventListener(sourceCustom, Paths.get(this.vdocHome.toURI())));
+				runnable.addExcludeMatcher("*___jb_*"); // exclude jetbrain files
 				
 				completionService.submit(runnable, "completed");
 			}
