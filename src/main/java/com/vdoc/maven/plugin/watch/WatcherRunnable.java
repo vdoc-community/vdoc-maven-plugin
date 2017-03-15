@@ -53,12 +53,10 @@ public class WatcherRunnable implements Runnable {
 			
 			boolean valid = true;
 			while (valid) {
-				LOGGER.info("Wait for changes {}", this.watchedFolder);
+			
 				// take suspend thread within events
-				WatchKey watchKey = folderWatcher.poll(250, TimeUnit.MILLISECONDS);
-				if(watchKey == null){
-					continue; // used to check for stop
-				}
+				WatchKey watchKey = folderWatcher.take();
+				
 				List<WatchEvent<?>> events = watchKey.pollEvents();
 				for (WatchEvent event : events) {
 					notifyListeners(watchKey, event);
