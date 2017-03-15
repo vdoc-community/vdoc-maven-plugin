@@ -28,8 +28,6 @@ public class WatcherRunnable implements Runnable {
 	private final Path watchedFolder;
 	private WatchService folderWatcher;
 	
-	private boolean running = true;
-	
 	private List<String> excludeMatcherList = new ArrayList<>();
 	private List<FolderEventListener> folderEventListenerList = new ArrayList<>();
 	
@@ -54,7 +52,8 @@ public class WatcherRunnable implements Runnable {
 		try {
 			
 			boolean valid = true;
-			while (valid && running) {
+			while (valid) {
+				LOGGER.info("Wait for changes {}", this.watchedFolder);
 				// take suspend thread within events
 				WatchKey watchKey = folderWatcher.poll(250, TimeUnit.MILLISECONDS);
 				if(watchKey == null){
@@ -141,12 +140,5 @@ public class WatcherRunnable implements Runnable {
 	public boolean addExcludeMatcher(String matcher) {
 		return excludeMatcherList.add(matcher);
 	}
-	
-	public void stopWatching() {
-		LOGGER.debug("Watcher stop received !");
-		synchronized (this) {
-			Thread.yield();
-			this.running = false;
-		}
-	}
+
 }
