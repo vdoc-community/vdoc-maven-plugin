@@ -244,7 +244,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
                 LOGGER.info("looking for user_apps_custom in {}", userAppsCustomFolder);
                 if (Files.isDirectory(userAppsCustomFolder)) {
                     LOGGER.info("user_apps_custom found {} add it's files into custom zip folder", userAppsCustomFolder);
-                    File[] customFolders = userAppsCustomFolder.toFile().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
+                    File[] customFolders = userAppsCustomFolder.toFile().listFiles();
                     for (File f : customFolders) {
                         this.compressDirectory(output, f, "custom/");
                         LOGGER.debug("add folder {} to custom zip folder ", f);
