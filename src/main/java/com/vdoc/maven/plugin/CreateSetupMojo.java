@@ -138,6 +138,12 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     @Parameter(defaultValue = "true")
     private boolean includeDependenciesSetups;
     /**
+     * Create a tests-data setup as well as the APPS setup
+     */
+    @Parameter(defaultValue = "false")
+    private boolean includeTestDataCreation;
+
+    /**
      * TODO :
      */
     private Set<String> finalZipEntrys = new HashSet<>();
@@ -162,6 +168,9 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             switch (this.packagingType) {
                 case APPS:
                     createdSetup = this.createAppsSetup();
+                    if(includeTestDataCreation) {
+                        this.createTestsDataSetup();
+                    }
                     break;
                 case CUSTOM:
                     createdSetup = this.createCustomSetup();
@@ -191,6 +200,21 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
         LOGGER.debug("adding setup to project artifacts");
         projectHelper.attachArtifact(this.project, "zip", SETUP_SUFFIX, metaAppOutput);
+
+        return metaAppOutput;
+    }
+
+    public File createTestsDataSetup() throws IOException, MojoExecutionException {
+
+        LOGGER.info("Create the VDoc tests data packaging Zip.");
+        File vdocTestDataOutput = createTestDataZip();
+
+        if ((this.vdocHome != null) && this.vdocHome.exists()) {
+            FileUtils.copyFileToDirectory(vdocTestDataOutput, new File(this.vdocHome, "apps"));
+        }
+
+        LOGGER.info("create the tests data meta setup zip with apps, documentation, fix, ...");
+        File metaAppOutput = createMetaSetupTestData(vdocTestDataOutput);
 
         return metaAppOutput;
     }
@@ -234,6 +258,25 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             }
         }
         return vdocAppOutput;
+    }
+
+    protected File createTestDataZip() throws IOException {
+        File vdocTestDataOutput = new File(this.buildDirectory, this.setupName + "-tests-data.zip");
+        try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(vdocTestDataOutput)) {
+            LOGGER.debug("try to add tests data custom resources ");
+            for (Resource r : this.project.getTestResources()) {
+                File resourcesDirectory = new File(r.getDirectory());
+                File customFolder = new File(resourcesDirectory.getParentFile(), "custom");
+                LOGGER.debug("add tests data custom folder " + customFolder.getAbsolutePath());
+                if (customFolder.isDirectory()) {
+                    File[] customFolders = customFolder.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
+                    for (File f : customFolders) {
+                        this.compressDirectory(output, f, BASE_ZIP_FOLDER);
+                    }
+                }
+            }
+        }
+        return vdocTestDataOutput;
     }
 
     protected File createMetaSetup(File vdocAppOutput) throws IOException, MojoExecutionException {
@@ -280,6 +323,28 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
             this.includeOtherModules(output);
 
+        }
+        return metaAppOutput;
+    }
+
+    protected File createMetaSetupTestData(File vdocAppOutput) throws IOException, MojoExecutionException {
+        File metaAppOutput = new File(this.buildDirectory, this.setupName + '-' + SETUP_SUFFIX + "-tests-data.zip");
+        try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(metaAppOutput)) {
+            for (Resource r : this.project.getTestResources()) {
+                Path userAppsCustomFolder = Paths.get(r.getDirectory()).getParent().resolve("user_apps_custom");
+                LOGGER.info("looking for the tests data user_apps_custom in {}", userAppsCustomFolder);
+                if (Files.isDirectory(userAppsCustomFolder)) {
+                    LOGGER.info("tests data user_apps_custom found {} add it's files into custom zip folder", userAppsCustomFolder);
+                    File[] customFolders = userAppsCustomFolder.toFile().listFiles();
+                    for (File f : customFolders) {
+                        this.compressDirectory(output, f, "custom/");
+                        LOGGER.debug("add folder {} to tests data custom zip folder ", f);
+                    }
+                }
+            }
+            // add the packaged tests data apps
+            LOGGER.debug("add the tests data packaged apps");
+            this.compressDirectory(output, vdocAppOutput, BASE_ZIP_FOLDER + "apps/");
         }
         return metaAppOutput;
     }
@@ -572,5 +637,13 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
     public void setIncludeOtherModulesTimeout(long includeOtherModulesTimeout) {
         this.includeOtherModulesTimeout = includeOtherModulesTimeout;
+    }
+
+    public boolean isIncludeTestDataCreation() {
+        return includeTestDataCreation;
+    }
+
+    public void setIncludeTestDataCreation(boolean includeTestDataCreation) {
+        this.includeTestDataCreation = includeTestDataCreation;
     }
 }
