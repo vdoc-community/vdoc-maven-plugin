@@ -261,7 +261,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     protected File createTestDataZip() throws IOException {
-        File vdocTestDataOutput = new File(this.buildDirectory, this.setupName + "-tests-data.zip");
+        File vdocTestDataOutput = new File(this.buildDirectory,  "tests-data-"+ this.setupName + ".zip");
         try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(vdocTestDataOutput)) {
             LOGGER.debug("try to add tests data custom resources ");
             for (Resource r : this.project.getTestResources()) {
