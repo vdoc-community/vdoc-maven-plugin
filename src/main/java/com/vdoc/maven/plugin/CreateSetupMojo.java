@@ -328,7 +328,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     }
 
     protected File createMetaSetupTestData(File vdocAppOutput) throws IOException, MojoExecutionException {
-        File metaAppOutput = new File(this.buildDirectory, this.setupName + '-' + SETUP_SUFFIX + "-tests-data.zip");
+        File metaAppOutput = new File(this.buildDirectory, "tests-data-"+this.setupName + '-' + SETUP_SUFFIX + ".zip");
         try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(metaAppOutput)) {
             for (Resource r : this.project.getTestResources()) {
                 Path userAppsCustomFolder = Paths.get(r.getDirectory()).getParent().resolve("user_apps_custom");
