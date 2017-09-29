@@ -6,7 +6,7 @@
 
     <groupId>com.vdoc.maven</groupId>
     <artifactId>vdoc-maven-plugin</artifactId>
-    <version>14.2.15-SNAPSHOT</version>
+    <version>14.2.15</version>
     <packaging>maven-plugin</packaging>
 
     <properties>
@@ -62,7 +62,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.20</version>
+            <version>[2.3.20,)</version>
         </dependency>
 
         <!-- Logger API -->
