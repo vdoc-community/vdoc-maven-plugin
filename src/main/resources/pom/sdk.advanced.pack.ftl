@@ -11,7 +11,7 @@
     </parent>
 
 
-    <artifactId>sdk.advanced.pack</artifactId>
+    <artifactId>sdk-advanced-pack</artifactId>
     <packaging>pom</packaging>
 
     <properties>
