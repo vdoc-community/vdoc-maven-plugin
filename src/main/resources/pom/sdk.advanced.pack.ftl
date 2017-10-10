@@ -5,19 +5,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>sdk</artifactId>
+        <artifactId>sdk.advanced</artifactId>
         <groupId>com.vdoc.engineering</groupId>
         <version>${targetVersion}</version>
     </parent>
 
 
-    <artifactId>sdk.advanced</artifactId>
+    <artifactId>sdk.advanced.pack</artifactId>
     <packaging>pom</packaging>
 
     <properties>
         <include.other.modules>false</include.other.modules>
-        <includeTestDataCreation>false</includeTestDataCreation>
-        <packagingType>APPS</packagingType>
+        <includeTestDataCreation>true</includeTestDataCreation>
+        <packagingType>PACK</packagingType>
     </properties>
 
     <dependencies>
@@ -69,7 +69,7 @@
                                     <goal>create-setup</goal>
                                 </goals>
                                 <configuration>
-                                    <setupName>${r"${project.artifactId}-${project.version}</setupName>
+                                    <setupName>${r"${project.artifactId}-${project.version} for VDoc${vdoc.version}"}</setupName>
                                     <packagingType>${r"${packagingType}"}</packagingType>
                                     <includeOtherModules>${r"${include.other.modules}"}</includeOtherModules>
                                     <includeTestDataCreation>${r"${includeTestDataCreation}"}</includeTestDataCreation>
