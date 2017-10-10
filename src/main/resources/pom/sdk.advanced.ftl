@@ -17,7 +17,6 @@
     <properties>
         <include.other.modules>false</include.other.modules>
         <includeTestDataCreation>false</includeTestDataCreation>
-        <includeDependenciesSetups>true</includeDependenciesSetups>
         <packagingType>APPS</packagingType>
     </properties>
 
