@@ -664,4 +664,22 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     public List<RemoteRepository> getRemoteRepos() {
         return remoteRepos;
     }
+    
+    /**
+     * get {@link CreateSetupMojo#repoSystem} property
+     *
+     * @return get the repoSystem property
+     **/
+    public RepositorySystem getRepoSystem() {
+        return repoSystem;
+    }
+    
+    /**
+     * get {@link CreateSetupMojo#repoSession} property
+     *
+     * @return get the repoSession property
+     **/
+    public RepositorySystemSession getRepoSession() {
+        return repoSession;
+    }
 }
