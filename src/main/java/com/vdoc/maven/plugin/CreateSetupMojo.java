@@ -655,4 +655,13 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     public MavenProjectHelper getProjectHelper() {
         return projectHelper;
     }
+    
+    /**
+     * get {@link CreateSetupMojo#remoteRepos} property
+     *
+     * @return get the remoteRepos property
+     **/
+    public List<RemoteRepository> getRemoteRepos() {
+        return remoteRepos;
+    }
 }
