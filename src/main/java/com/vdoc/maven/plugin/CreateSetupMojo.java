@@ -682,4 +682,13 @@ public class CreateSetupMojo extends AbstractVDocMojo {
     public RepositorySystemSession getRepoSession() {
         return repoSession;
     }
+    
+    /**
+     * get {@link CreateSetupMojo#finalZipEntrys} property
+     *
+     * @return get the finalZipEntrys property
+     **/
+    public Set<String> getFinalZipEntrys() {
+        return finalZipEntrys;
+    }
 }
