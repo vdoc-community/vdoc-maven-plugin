@@ -76,7 +76,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
      */
     @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true)
     private List<RemoteRepository> remoteRepos;
-
+    
     /**
      * Used for attaching the artifact in the project.
      */
@@ -645,5 +645,14 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
     public void setIncludeTestDataCreation(boolean includeTestDataCreation) {
         this.includeTestDataCreation = includeTestDataCreation;
+    }
+    
+    /**
+     * get {@link CreateSetupMojo#projectHelper} property
+     *
+     * @return get the projectHelper property
+     **/
+    public MavenProjectHelper getProjectHelper() {
+        return projectHelper;
     }
 }
