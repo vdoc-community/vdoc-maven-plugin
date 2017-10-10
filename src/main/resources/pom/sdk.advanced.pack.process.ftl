@@ -16,6 +16,7 @@
 
     <properties>
         <includeTestDataCreation>true</includeTestDataCreation>
+        <includeDependenciesSetups>true</includeDependenciesSetups>
         <packagingType>PACK_PROCESS</packagingType>
     </properties>
 

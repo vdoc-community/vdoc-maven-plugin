@@ -17,6 +17,7 @@
     <properties>
         <include.other.modules>false</include.other.modules>
         <includeTestDataCreation>false</includeTestDataCreation>
+        <includeDependenciesSetups>true</includeDependenciesSetups>
         <packagingType>APPS</packagingType>
     </properties>
 
@@ -74,6 +75,7 @@
                                     <includeOtherModules>${r"${include.other.modules}"}</includeOtherModules>
                                     <includeTestDataCreation>${r"${includeTestDataCreation}"}</includeTestDataCreation>
                                     <vdocHome>${r"${VDOC_HOME}"}</vdocHome>
+                                    <includeDependenciesSetups>${r"${includeDependenciesSetups}"}</includeDependenciesSetups>
                                 </configuration>
                             </execution>
                         </executions>
