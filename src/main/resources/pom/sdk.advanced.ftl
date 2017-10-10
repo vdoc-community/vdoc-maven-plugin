@@ -17,6 +17,7 @@
     <properties>
         <include.other.modules>false</include.other.modules>
         <includeTestDataCreation>false</includeTestDataCreation>
+        <packagingType>APPS</packagingType>
     </properties>
 
     <dependencies>
@@ -69,9 +70,9 @@
                                 </goals>
                                 <configuration>
                                     <setupName>${r"${project.artifactId}-${project.version} for VDoc${vdoc.version}"}</setupName>
-                                    <packagingType>APPS</packagingType>
+                                    <packagingType>${r"${packagingType}"}</packagingType>
                                     <includeOtherModules>${r"${include.other.modules}"}</includeOtherModules>
-                                    <includeTestDataCreation>${includeTestDataCreation}</includeTestDataCreation>
+                                    <includeTestDataCreation>${r"${includeTestDataCreation}"}</includeTestDataCreation>
                                     <vdocHome>${r"${VDOC_HOME}"}</vdocHome>
                                 </configuration>
                             </execution>
