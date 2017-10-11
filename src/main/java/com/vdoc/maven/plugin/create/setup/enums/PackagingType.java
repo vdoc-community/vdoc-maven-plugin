@@ -4,13 +4,15 @@ import com.vdoc.maven.plugin.CreateSetupMojo;
 import com.vdoc.maven.plugin.packaging.Packaging;
 import com.vdoc.maven.plugin.packaging.impl.AppsPackaging;
 import com.vdoc.maven.plugin.packaging.impl.CustomPackaging;
+import com.vdoc.maven.plugin.packaging.impl.PackPackaging;
+import com.vdoc.maven.plugin.packaging.impl.PackProcessPackaging;
 
 /**
  * Created by famaridon on 13/05/2014.
  */
 public enum PackagingType {
     
-    APPS(AppsPackaging.class), CUSTOM(CustomPackaging.class), PACK(AppsPackaging.class), PACK_PROCESS(AppsPackaging.class);
+    APPS(AppsPackaging.class), CUSTOM(CustomPackaging.class), PACK(PackPackaging.class), PACK_PROCESS(PackProcessPackaging.class);
     
     private Class<? extends Packaging> packagingClass;
     
