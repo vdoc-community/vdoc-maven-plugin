@@ -101,19 +101,12 @@ public class HardDeployMojo extends AbstractVDocMojo {
                 File targetCustomFolder = new File(vdocEAR, "vdoc.war/WEB-INF/storage/custom/");
                 File targetWebappFolder = new File(vdocEAR, "vdoc.war/");
                 for (String sourceRootPath : this.project.getCompileSourceRoots()) {
-
-                    File sourceRoot = new File(sourceRootPath);
-                    File customFolder = new File(sourceRoot.getParentFile(), "custom");
-
-                    if (customFolder.exists()) {
-                        LOGGER.info(String.format("Copy custom %1$s to %2$s", customFolder.getAbsolutePath(), targetCustomFolder.getAbsolutePath()));
-                        FileUtils.copyDirectory(customFolder, targetCustomFolder, notWebAppFolderFileFilter);
-                        File customWebappFolder = new File(customFolder, "webapp");
-                        if (customWebappFolder.exists()) {
-                            LOGGER.info(String.format("Copy webapp %1$s to %2$s", customWebappFolder.getAbsolutePath(), targetWebappFolder.getAbsolutePath()));
-                            FileUtils.copyDirectory(customWebappFolder, targetWebappFolder);
-                        }
-                    }
+    
+                    deployToWebapp(targetCustomFolder, targetWebappFolder, sourceRootPath);
+                }
+    
+                for (String testsSourceRootPath : project.getTestCompileSourceRoots()) {
+                    deployToWebapp(targetCustomFolder, targetWebappFolder, testsSourceRootPath);
                 }
             }
             if (this.deployDependencies && dependenciesFolder.exists() && dependenciesFolder.isDirectory()) {
@@ -129,5 +122,20 @@ public class HardDeployMojo extends AbstractVDocMojo {
         }
 
     }
-
+    
+    private void deployToWebapp(File targetCustomFolder, File targetWebappFolder, String sourceRootPath) throws IOException {
+        File sourceRoot = new File(sourceRootPath);
+        File customFolder = new File(sourceRoot.getParentFile(), "custom");
+        
+        if (customFolder.exists()) {
+            LOGGER.info(String.format("Copy custom %1$s to %2$s", customFolder.getAbsolutePath(), targetCustomFolder.getAbsolutePath()));
+            FileUtils.copyDirectory(customFolder, targetCustomFolder, notWebAppFolderFileFilter);
+            File customWebappFolder = new File(customFolder, "webapp");
+            if (customWebappFolder.exists()) {
+                LOGGER.info(String.format("Copy webapp %1$s to %2$s", customWebappFolder.getAbsolutePath(), targetWebappFolder.getAbsolutePath()));
+                FileUtils.copyDirectory(customWebappFolder, targetWebappFolder);
+            }
+        }
+    }
+    
 }

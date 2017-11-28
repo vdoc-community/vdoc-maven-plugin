@@ -16,6 +16,8 @@
 
     <properties>
         <include.other.modules>false</include.other.modules>
+        <includeTestDataCreation>false</includeTestDataCreation>
+        <packagingType>APPS</packagingType>
     </properties>
 
     <dependencies>
@@ -67,10 +69,12 @@
                                     <goal>create-setup</goal>
                                 </goals>
                                 <configuration>
-                                    <setupName>${r"${project.artifactId}-${project.version} for VDoc${vdoc.version}"}</setupName>
-                                    <packagingType>APPS</packagingType>
+                                    <setupName>${r"${project.artifactId}-${project.version}</setupName>
+                                    <packagingType>${r"${packagingType}"}</packagingType>
                                     <includeOtherModules>${r"${include.other.modules}"}</includeOtherModules>
+                                    <includeTestDataCreation>${r"${includeTestDataCreation}"}</includeTestDataCreation>
                                     <vdocHome>${r"${VDOC_HOME}"}</vdocHome>
+                                    <includeDependenciesSetups>${r"${includeDependenciesSetups}"}</includeDependenciesSetups>
                                 </configuration>
                             </execution>
                         </executions>
@@ -100,80 +104,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-		<profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <!-- copy setup -->
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.8</version>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <copy todir="setup">
-                                            <fileset dir="${r"${project.build.directory}"}">
-                                                <include name="*-setup.zip" />
-                                            </fileset>
-                                        </copy>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- add setup to scm -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-scm-plugin</artifactId>
-                        <version>1.9.4</version>
-                        <executions>
-                            <execution>
-                                <id>remove old setup</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>remove</goal>
-                                    <goal>checkin</goal>
-                                </goals>
-                                <configuration>
-                                    <basedir>setup</basedir>
-                                    <includes>*</includes>
-                                    <message>remove old setup</message>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>add new setup</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>add</goal>
-                                    <goal>checkin</goal>
-                                </goals>
-                                <configuration>
-                                    <basedir>setup</basedir>
-                                    <includes>*</includes>
-                                    <message>add setup</message>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                        <version>2.5.3</version>
-                        <configuration>
-                            <preparationGoals>clean deploy</preparationGoals>
-                            <tagNameFormat>${r"@{project.artifactId}"} v${r"@{project.version}"} for ${r"${vdoc.version}"}</tagNameFormat>
-                            <tagBase>${r"${svn.url}"}/tags</tagBase>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

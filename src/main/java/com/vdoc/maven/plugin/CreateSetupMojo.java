@@ -2,6 +2,7 @@ package com.vdoc.maven.plugin;
 
 import com.vdoc.maven.plugin.create.setup.beans.CompletedModule;
 import com.vdoc.maven.plugin.create.setup.enums.PackagingType;
+import com.vdoc.maven.plugin.packaging.Packaging;
 import org.apache.commons.compress.archivers.*;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
@@ -76,7 +77,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
      */
     @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true)
     private List<RemoteRepository> remoteRepos;
-
+    
     /**
      * Used for attaching the artifact in the project.
      */
@@ -161,379 +162,19 @@ public class CreateSetupMojo extends AbstractVDocMojo {
             return;
         }
 
-        String s = "";
-
         File createdSetup;
         try {
-            switch (this.packagingType) {
-                case APPS:
-                    createdSetup = this.createAppsSetup();
-                    if(includeTestDataCreation) {
-                        this.createTestsDataSetup();
-                    }
-                    break;
-                case CUSTOM:
-                    createdSetup = this.createCustomSetup();
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unsupported packaging type !");
+            Packaging packaging = packagingType.getPackaging(this);
+            createdSetup = packaging.execute();
+            if(includeTestDataCreation) {
+                packaging.createTestsDataSetup();
             }
-
         } catch (IOException e) {
             throw new MojoFailureException("Zip File can't be build", e);
         }
         this.complete(createdSetup);
     }
-
-    public File createAppsSetup() throws IOException, MojoExecutionException {
-
-        LOGGER.info("Create the VDoc apps packaging Zip.");
-        File vdocAppOutput = createAppsZip();
-
-        // #5 copy apps to vdoc
-        if ((this.vdocHome != null) && this.vdocHome.exists()) {
-            FileUtils.copyFileToDirectory(vdocAppOutput, new File(this.vdocHome, "apps"));
-        }
-
-        LOGGER.info("create the meta setup zip with apps, documentation, fix, ...");
-        File metaAppOutput = createMetaSetup(vdocAppOutput);
-
-        LOGGER.debug("adding setup to project artifacts");
-        projectHelper.attachArtifact(this.project, "zip", SETUP_SUFFIX, metaAppOutput);
-
-        return metaAppOutput;
-    }
-
-    public File createTestsDataSetup() throws IOException, MojoExecutionException {
-
-        LOGGER.info("Create the VDoc tests data packaging Zip.");
-        File vdocTestDataOutput = createTestDataZip();
-
-        if ((this.vdocHome != null) && this.vdocHome.exists()) {
-            FileUtils.copyFileToDirectory(vdocTestDataOutput, new File(this.vdocHome, "apps"));
-        }
-
-        LOGGER.info("create the tests data meta setup zip with apps, documentation, fix, ...");
-        File metaAppOutput = createMetaSetupTestData(vdocTestDataOutput);
-
-        return metaAppOutput;
-    }
-
-    protected File createAppsZip() throws IOException {
-        File vdocAppOutput = new File(this.buildDirectory, this.setupName + ".zip");
-        try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(vdocAppOutput)) {
-
-            LOGGER.debug("try to add custom resources ");
-            for (Resource r : this.project.getResources()) {
-                File resourcesDirectory = new File(r.getDirectory());
-                File customFolder = new File(resourcesDirectory.getParentFile(), "custom");
-                LOGGER.debug("add custom folder " + customFolder.getAbsolutePath());
-                if (customFolder.isDirectory()) {
-                    File[] customFolders = customFolder.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
-                    for (File f : customFolders) {
-                        this.compressDirectory(output, f, BASE_ZIP_FOLDER);
-                    }
-                }
-            }
-            this.compressDirectory(output, AbstractVDocMojo.getJarFile(this.buildDirectory, this.jarName, null), "lib/");
-            if (this.libFolder.exists()) {
-                this.compressDirectory(output, this.libFolder, BASE_ZIP_FOLDER);
-            }
-
-            if (this.includeTest) {
-                File testJar = AbstractVDocMojo.getJarFile(this.buildDirectory, this.jarName, "tests");
-                if (testJar.exists()) {
-                    this.compressDirectory(output, testJar, "lib/");
-                } else {
-                    LOGGER.warn("Test jar not found!");
-                }
-            }
-
-            if (this.includeSource) {
-                this.compressDirectory(output, AbstractVDocMojo.getJarFile(this.buildDirectory, this.jarName, "source"), "lib/");
-            }
-
-            if (this.includeJavadoc) {
-                this.compressDirectory(output, AbstractVDocMojo.getJarFile(this.buildDirectory, this.jarName, "javadoc"), "lib/");
-            }
-        }
-        return vdocAppOutput;
-    }
-
-    protected File createTestDataZip() throws IOException {
-        File vdocTestDataOutput = new File(this.buildDirectory,  "tests-data-"+ this.setupName + ".zip");
-        try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(vdocTestDataOutput)) {
-            LOGGER.debug("try to add tests data custom resources ");
-            for (Resource r : this.project.getTestResources()) {
-                File resourcesDirectory = new File(r.getDirectory());
-                File customFolder = new File(resourcesDirectory.getParentFile(), "custom");
-                LOGGER.debug("add tests data custom folder " + customFolder.getAbsolutePath());
-                if (customFolder.isDirectory()) {
-                    File[] customFolders = customFolder.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
-                    for (File f : customFolders) {
-                        this.compressDirectory(output, f, BASE_ZIP_FOLDER);
-                    }
-                }
-            }
-        }
-        return vdocTestDataOutput;
-    }
-
-    protected File createMetaSetup(File vdocAppOutput) throws IOException, MojoExecutionException {
-        File metaAppOutput = new File(this.buildDirectory, this.setupName + '-' + SETUP_SUFFIX + ".zip");
-        try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(metaAppOutput)) {
-            for (Resource r : this.project.getResources()) {
-                Path userAppsCustomFolder = Paths.get(r.getDirectory()).getParent().resolve("user_apps_custom");
-                LOGGER.info("looking for user_apps_custom in {}", userAppsCustomFolder);
-                if (Files.isDirectory(userAppsCustomFolder)) {
-                    LOGGER.info("user_apps_custom found {} add it's files into custom zip folder", userAppsCustomFolder);
-                    File[] customFolders = userAppsCustomFolder.toFile().listFiles();
-                    for (File f : customFolders) {
-                        this.compressDirectory(output, f, "custom/");
-                        LOGGER.debug("add folder {} to custom zip folder ", f);
-                    }
-                }
-            }
-
-            // add the packaged apps
-            LOGGER.debug("add the packaged apps");
-            this.compressDirectory(output, vdocAppOutput, BASE_ZIP_FOLDER + "apps/");
-
-
-            // include linked apps
-            if (this.includeDependenciesSetups) {
-
-                includeDependenciesSetups(output);
-            }
-
-
-            // include vdoc fix
-            File fix = new File(this.project.getBasedir(), "fix");
-            if (fix.exists()) {
-                LOGGER.debug("add fix folder");
-                this.compressDirectory(output, fix, BASE_ZIP_FOLDER);
-            }
-
-            // include documentation
-            File documentation = new File(this.project.getBasedir(), "documentation");
-            if (documentation.exists()) {
-                LOGGER.debug("add documentation folder");
-                this.compressDirectory(output, documentation, BASE_ZIP_FOLDER);
-            }
-
-            this.includeOtherModules(output);
-
-        }
-        return metaAppOutput;
-    }
-
-    protected File createMetaSetupTestData(File vdocAppOutput) throws IOException, MojoExecutionException {
-        File metaAppOutput = new File(this.buildDirectory, "tests-data-"+this.setupName + '-' + SETUP_SUFFIX + ".zip");
-        try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(metaAppOutput)) {
-            for (Resource r : this.project.getTestResources()) {
-                Path userAppsCustomFolder = Paths.get(r.getDirectory()).getParent().resolve("user_apps_custom");
-                LOGGER.info("looking for the tests data user_apps_custom in {}", userAppsCustomFolder);
-                if (Files.isDirectory(userAppsCustomFolder)) {
-                    LOGGER.info("tests data user_apps_custom found {} add it's files into custom zip folder", userAppsCustomFolder);
-                    File[] customFolders = userAppsCustomFolder.toFile().listFiles();
-                    for (File f : customFolders) {
-                        this.compressDirectory(output, f, "custom/");
-                        LOGGER.debug("add folder {} to tests data custom zip folder ", f);
-                    }
-                }
-            }
-            // add the packaged tests data apps
-            LOGGER.debug("add the tests data packaged apps");
-            this.compressDirectory(output, vdocAppOutput, BASE_ZIP_FOLDER + "apps/");
-        }
-        return metaAppOutput;
-    }
-
-    protected void includeDependenciesSetups(ZipArchiveOutputStream output) throws IOException, MojoExecutionException {
-        File file = new File(this.buildDirectory, "../apps");
-        File[] depApps = file.listFiles((FilenameFilter) new WildcardFileFilter("*-setup.zip"));
-        LOGGER.info("merge local apps");
-        if (depApps != null) {
-            for (File depApp : depApps) {
-                LOGGER.warn("merge {} apps.", depApp.getName());
-                this.mergeArchive(output, depApp);
-            }
-        }
-
-        LOGGER.info("remote apps");
-        Set<org.eclipse.aether.artifact.Artifact> setupArtifactSet = new HashSet<>();
-        for (Artifact artifact : this.project.getDependencyArtifacts()) {
-            if ("provided".equals(artifact.getScope()) && (artifact.getGroupId().startsWith("com.vdoc") || artifact.getGroupId().startsWith("com.moovapps"))) {
-                LOGGER.info("Try to get {}:{}:{}:{}:{}", artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion());
-                // check for remote setup
-                ArtifactRequest request = new ArtifactRequest();
-                request.setArtifact(new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion()));
-                request.setRepositories(remoteRepos);
-                try {
-                    ArtifactResult result = repoSystem.resolveArtifact(repoSession, request);
-                    setupArtifactSet.add(result.getArtifact());
-                } catch (ArtifactResolutionException e) {
-                    LOGGER.warn("No setup found for {}:{}:{}:{}:{}", artifact.getGroupId(), artifact.getArtifactId(), "setup", "zip", artifact.getVersion());
-                }
-            }
-        }
-        for (org.eclipse.aether.artifact.Artifact artifact : setupArtifactSet) {
-            LOGGER.warn("merge {} apps.", artifact.getFile().getName());
-            this.mergeArchive(output, artifact.getFile());
-        }
-    }
-
-    /**
-     * wait for others modules and merge it into the current module setup
-     *
-     * @param output
-     * @throws MojoExecutionException
-     * @throws IOException
-     */
-    protected void includeOtherModules(ZipArchiveOutputStream output) throws MojoExecutionException, IOException {
-        // include other modules
-        if (this.includeOtherModules) {
-
-            LOGGER.info("Join for other modules");
-            // only 1 module can join others tack lock
-            synchronized (completedModulesLock) {
-                if (completedModulesLock == Boolean.TRUE) {
-                    throw new MojoExecutionException("Too many project use includeOtherModules = true");
-                }
-                completedModulesLock = Boolean.TRUE;
-            }
-
-            // join other modules if multi-thread else it should be the last compiled module.
-            int modulesCount = this.getProject().getParent().getModules().size() - 1;
-            do {
-                try {
-                    CompletedModule completedModule = completedModules.poll(this.includeOtherModulesTimeout, TimeUnit.SECONDS);
-                    LOGGER.info("Join module " + completedModule.getArtifactId() + " merge setup file " + completedModule.getSetup().getName());
-
-                    if (completedModule.getSetup() == null) {
-                        LOGGER.warn(completedModule.getArtifactId() + " have fail!");
-                        throw new MojoExecutionException(completedModule.getArtifactId() + " have fail!");
-                    }
-
-                    try (FileInputStream fileInputStream = new FileInputStream(completedModule.getSetup());
-                         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-                         ArchiveInputStream input = new ArchiveStreamFactory().createArchiveInputStream(bufferedInputStream)) {
-
-                        this.mergeArchive(output, input);
-
-                    } catch (ArchiveException e) {
-                        throw new MojoExecutionException("Can't read module '" + completedModule.getArtifactId() + "' setup file '" + completedModule.getArtifactId() + "'!", e);
-                    }
-
-                } catch (InterruptedException e) {
-                    throw new MojoExecutionException("Waiting for other module fail!", e);
-                }
-
-                modulesCount--;
-            } while (modulesCount > 0);
-        }
-    }
-
-    /**
-     * copy any entry of the <b>from</b> archive into the <b>to</b>.
-     *
-     * @param to   the output archive
-     * @param from the source archive
-     * @throws IOException
-     * @throws MojoExecutionException
-     */
-    protected void mergeArchive(ArchiveOutputStream to, File from) throws IOException, MojoExecutionException {
-        try (FileInputStream fileInputStream = new FileInputStream(from);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-             ArchiveInputStream input = new ArchiveStreamFactory().createArchiveInputStream(bufferedInputStream)) {
-
-            this.mergeArchive(to, input);
-        } catch (ArchiveException e) {
-            throw new IOException(e);
-        }
-    }
-
-    /**
-     * copy any entry of the <b>from</b> archive into the <b>to</b>.
-     *
-     * @param to   the output archive
-     * @param from the source archive
-     * @throws IOException
-     * @throws MojoExecutionException
-     */
-    protected void mergeArchive(ArchiveOutputStream to, ArchiveInputStream from) throws IOException, MojoExecutionException {
-
-        long offset = 0L;
-        ArchiveEntry entry;
-        while ((entry = from.getNextEntry()) != null) {
-            if (!to.canWriteEntryData(entry)) {
-                throw new MojoExecutionException("Can't merge setup files!");
-            }
-            LOGGER.debug("merge entry : " + entry.getName());
-            if (this.finalZipEntrys.add(entry.getName())) {
-                to.putArchiveEntry(entry);
-                if (entry.getSize() != 0) {
-                    IOUtils.copyLarge(from, to, 0, entry.getSize());
-                    offset += entry.getSize();
-                }
-                to.closeArchiveEntry();
-            }
-        }
-    }
-
-    /**
-     * compress a directory to an archive
-     *
-     * @param outputStream the archive stream
-     * @param directory    the source directory
-     * @param base         the zip base directory
-     * @throws IOException
-     */
-    protected void compressDirectory(ArchiveOutputStream outputStream, File directory, String base) throws IOException {
-
-        Validate.notNull(outputStream);
-        Validate.notNull(directory);
-        Validate.notNull(base);
-
-        if (!directory.exists()) {
-            throw new IllegalArgumentException("directory '" + directory.getPath() + "' to compress not found!");
-        }
-
-        // we must remove first / for base archive entry else we get a blank directory.
-        if (base.startsWith("/")) {
-            base = StringUtils.substring(base, 1);
-        }
-        // ignore all files whose start with ~
-        if (directory.isFile() && directory.getName().startsWith("~")) {
-            LOGGER.debug("File ignored : " + directory);
-            return;
-        }
-
-        String entryName = base + directory.getName();
-        LOGGER.debug("Add Zip entry : " + entryName);
-        ArchiveEntry tarEntry = outputStream.createArchiveEntry(directory, entryName);
-        outputStream.putArchiveEntry(tarEntry);
-
-        if (directory.isFile()) {
-            try (FileInputStream fis = new FileInputStream(directory)) {
-                IOUtils.copy(fis, outputStream);
-            }
-            outputStream.closeArchiveEntry();
-        } else {
-            outputStream.closeArchiveEntry();
-            File[] children = directory.listFiles();
-            if (children != null) {
-                for (File child : children) {
-                    this.compressDirectory(outputStream, child, entryName + '/');
-                }
-            }
-        }
-    }
-
-
-    public File createCustomSetup() {
-        throw new NotImplementedException("Currently not implemented!");
-    }
+    
 
     /**
      * flag this module as completed
@@ -645,5 +286,50 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 
     public void setIncludeTestDataCreation(boolean includeTestDataCreation) {
         this.includeTestDataCreation = includeTestDataCreation;
+    }
+    
+    /**
+     * get {@link CreateSetupMojo#projectHelper} property
+     *
+     * @return get the projectHelper property
+     **/
+    public MavenProjectHelper getProjectHelper() {
+        return projectHelper;
+    }
+    
+    /**
+     * get {@link CreateSetupMojo#remoteRepos} property
+     *
+     * @return get the remoteRepos property
+     **/
+    public List<RemoteRepository> getRemoteRepos() {
+        return remoteRepos;
+    }
+    
+    /**
+     * get {@link CreateSetupMojo#repoSystem} property
+     *
+     * @return get the repoSystem property
+     **/
+    public RepositorySystem getRepoSystem() {
+        return repoSystem;
+    }
+    
+    /**
+     * get {@link CreateSetupMojo#repoSession} property
+     *
+     * @return get the repoSession property
+     **/
+    public RepositorySystemSession getRepoSession() {
+        return repoSession;
+    }
+    
+    /**
+     * get {@link CreateSetupMojo#finalZipEntrys} property
+     *
+     * @return get the finalZipEntrys property
+     **/
+    public Set<String> getFinalZipEntrys() {
+        return finalZipEntrys;
     }
 }
