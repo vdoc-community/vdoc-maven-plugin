@@ -69,7 +69,7 @@
                                     <goal>create-setup</goal>
                                 </goals>
                                 <configuration>
-                                    <setupName>${r"${project.artifactId}-${project.version}</setupName>
+                                    <setupName>${r"${project.artifactId}-${project.version}"}</setupName>
                                     <packagingType>${r"${packagingType}"}</packagingType>
                                     <includeOtherModules>${r"${include.other.modules}"}</includeOtherModules>
                                     <includeTestDataCreation>${r"${includeTestDataCreation}"}</includeTestDataCreation>
