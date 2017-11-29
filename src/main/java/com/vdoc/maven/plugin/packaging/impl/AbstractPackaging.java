@@ -45,7 +45,7 @@ public abstract class AbstractPackaging implements Packaging {
 	/**
 	 * this is used to synchronize multiple modules build on multiple thread
 	 */
-	protected static final BlockingQueue<CompletedModule> completedModules = new LinkedBlockingQueue<>();
+	public static final BlockingQueue<CompletedModule> COMPLETED_MODULES = new LinkedBlockingQueue<>();
 	/**
 	 * this lock is used to avoid multiple includeOtherModules use.
 	 */
@@ -226,6 +226,10 @@ public abstract class AbstractPackaging implements Packaging {
 		File metaAppOutput = createMetaSetupTestData(vdocTestDataOutput);
 		
 		return metaAppOutput;
+	}
+	
+	public void complete(File setup) throws MojoExecutionException {
+		// default nothing to do
 	}
 	
 	protected File createTestDataZip() throws IOException {

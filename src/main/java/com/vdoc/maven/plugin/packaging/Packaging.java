@@ -10,4 +10,5 @@ public interface Packaging {
 	void init(CreateSetupMojo createSetupMojo);
 	File execute() throws IOException, MojoExecutionException;
 	File createTestsDataSetup() throws IOException, MojoExecutionException ;
+	void complete(File setup) throws MojoExecutionException;
 }
