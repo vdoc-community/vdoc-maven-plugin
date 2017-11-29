@@ -58,6 +58,22 @@ public class AppsPackaging extends AbstractPackaging {
 		return metaAppOutput;
 	}
 	
+	/**
+	 * flag this module as completed
+	 *
+	 * @param setup
+	 * @throws MojoExecutionException
+	 */
+	public void complete(File setup) throws MojoExecutionException {
+		synchronized (COMPLETED_MODULES) {
+			try {
+				COMPLETED_MODULES.put(new CompletedModule(this.getProject().getArtifactId(), setup));
+			} catch (InterruptedException e) {
+				throw new MojoExecutionException("Can't complete this module!", e);
+			}
+		}
+	}
+	
 	protected File createAppsZip() throws IOException {
 		File vdocAppOutput = new File(getBuildDirectory(), getSetupName() + ".zip");
 		try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(vdocAppOutput)) {
@@ -212,7 +228,7 @@ public class AppsPackaging extends AbstractPackaging {
 			int modulesCount = this.getProject().getParent().getModules().size() - 1;
 			do {
 				try {
-					CompletedModule completedModule = completedModules.poll(getIncludeOtherModulesTimeout(), TimeUnit.SECONDS);
+					CompletedModule completedModule = COMPLETED_MODULES.poll(getIncludeOtherModulesTimeout(), TimeUnit.SECONDS);
 					LOGGER.info("Join module " + completedModule.getArtifactId() + " merge setup file " + completedModule.getSetup().getName());
 					
 					if (completedModule.getSetup() == null) {
