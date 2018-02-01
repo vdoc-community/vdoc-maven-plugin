@@ -1,7 +1,7 @@
 package com.vdoc.maven.plugin;
 
+import com.vdoc.maven.plugin.watch.WatchType;
 import com.vdoc.maven.plugin.watch.WatcherRunnable;
-import com.vdoc.maven.plugin.watch.listener.impl.VDocHostDeployerEventListener;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -14,7 +14,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionService;
@@ -29,17 +28,17 @@ import java.util.concurrent.Executors;
 public class WatchMojo extends AbstractVDocMojo {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(GeneratePluginDocMojo.class);
-	
-	protected Path targetEar;
-	protected Path targetCustom;
+
 	protected List<Path> sourceCustoms = new ArrayList<>();
-	protected WatchService watcher;
 	
 	/**
 	 * the VDoc home folder.
 	 */
 	@Parameter(required = true)
 	protected File vdocHome;
+
+	@Parameter(required = true, defaultValue = "APPS")
+	protected WatchType watchType;
 	
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -58,9 +57,8 @@ public class WatchMojo extends AbstractVDocMojo {
 		try {
 			for (Path sourceCustom : this.sourceCustoms) {
 				WatcherRunnable runnable = new WatcherRunnable(sourceCustom);
-				runnable.addFolderEventListener(new VDocHostDeployerEventListener(sourceCustom, Paths.get(this.vdocHome.toURI())));
+				runnable.addFolderEventListener(this.watchType.getFolderEventListener(sourceCustom, Paths.get(this.vdocHome.toURI())));
 				runnable.addExcludeMatcher("*___jb_*"); // exclude jetbrain files
-				
 				completionService.submit(runnable, "completed");
 			}
 			
@@ -92,12 +90,19 @@ public class WatchMojo extends AbstractVDocMojo {
 	
 	private void addSourceCustom(List<String> sourceFolders) {
 		for (String sourceFolder : sourceFolders) {
-			Path sourceCustom = Paths.get(sourceFolder).getParent().resolve("custom");
-			if (Files.exists(sourceCustom)) {
-				LOGGER.info(" >> {}", sourceCustom);
-				sourceCustoms.add(sourceCustom);
-			}
+			//Addon
+			addSourceCustom(sourceFolder, "custom");
+			//VDodWAR
+			addSourceCustom(sourceFolder, "webapp");
 		}
 	}
-	
+
+	private void addSourceCustom(String sourceFolder, String folderName) {
+		Path path = Paths.get(sourceFolder).getParent().resolve(folderName);
+		if (Files.exists(path)) {
+			LOGGER.info(" >> {}", path);
+			this.sourceCustoms.add(path);
+		}
+	}
+
 }
