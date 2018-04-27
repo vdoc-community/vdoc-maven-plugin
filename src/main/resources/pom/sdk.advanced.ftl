@@ -44,6 +44,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
             </plugin>
+            <plugin>
+            	<groupId>com.amashchenko.maven.plugin</groupId>
+            	<artifactId>gitflow-maven-plugin</artifactId>
+            	<configuration>
+                	<pushRemote>false</pushRemote>
+                	<versionDigitToIncrement>1</versionDigitToIncrement>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
