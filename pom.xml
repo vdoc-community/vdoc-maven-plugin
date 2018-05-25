@@ -81,7 +81,7 @@
         <dependency>
             <groupId>com.moovapps.process</groupId>
             <artifactId>moovapps-app-deduplicator</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 
