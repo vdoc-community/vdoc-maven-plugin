@@ -6,7 +6,7 @@
 
     <groupId>com.vdoc.maven</groupId>
     <artifactId>vdoc-maven-plugin</artifactId>
-    <version>14.2.19</version>
+    <version>14.2.20</version>
     <packaging>maven-plugin</packaging>
 
     <properties>
@@ -78,7 +78,11 @@
             <version>1.0.0</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>com.moovapps.process</groupId>
+            <artifactId>moovapps-app-deduplicator</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 

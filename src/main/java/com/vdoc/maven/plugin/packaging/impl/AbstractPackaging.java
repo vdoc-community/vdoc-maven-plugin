@@ -1,5 +1,6 @@
 package com.vdoc.maven.plugin.packaging.impl;
 
+import com.moovapps.process.app.deduplicator.ZipApplicationsDeduplicator;
 import com.vdoc.maven.plugin.CreateSetupMojo;
 import com.vdoc.maven.plugin.create.setup.beans.CompletedModule;
 import com.vdoc.maven.plugin.create.setup.enums.PackagingType;
@@ -156,7 +157,10 @@ public abstract class AbstractPackaging implements Packaging {
 	
 	@Override
 	public File execute() throws IOException, MojoExecutionException {
-		return createSetup();
+		File createdSetup = createSetup();
+		ZipApplicationsDeduplicator deduplicator = new ZipApplicationsDeduplicator(createdSetup);
+		deduplicator.execute();
+		return createdSetup;
 	}
 	
 	protected abstract File createSetup() throws IOException, MojoExecutionException;
