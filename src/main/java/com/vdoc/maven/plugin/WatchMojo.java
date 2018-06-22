@@ -42,11 +42,9 @@ public class WatchMojo extends AbstractVDocMojo
 	@Parameter
 	protected List<File> sources;
 	@Parameter
-	protected List<String> excludes;
-	@Parameter
-	protected File target;
-	
-	protected File vdocEar;
+	protected List<String> excludes = new ArrayList<>();
+	@Parameter(defaultValue = "")
+	protected String targetPrefix ;
 	
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException
@@ -68,7 +66,7 @@ public class WatchMojo extends AbstractVDocMojo
 						.setApplicationServer(applicationServer)
 						.setDeployementType(deployementType)
 						.setSource(source)
-						.setTarget(Paths.get(this.vdocEar.toURI()))
+						.setTarget(Paths.get(this.vdocHome.toURI()))
 						.createDeployerEventListenerConfiguration();
 					configurations.add(configuration);
 				}
@@ -82,7 +80,8 @@ public class WatchMojo extends AbstractVDocMojo
 						.setApplicationServer(applicationServer)
 						.setDeployementType(deployementType)
 						.setSource(Paths.get(source.toURI()))
-						.setTarget(Paths.get(target.toURI()))
+						.setTarget(Paths.get(this.vdocHome.toURI()))
+						.setTargetPrefix(Paths.get(this.targetPrefix))
 						.createDeployerEventListenerConfiguration();
 					configurations.add(configuration);
 				}

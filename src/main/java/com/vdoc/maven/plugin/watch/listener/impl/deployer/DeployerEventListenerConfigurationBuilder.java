@@ -10,6 +10,7 @@ public class DeployerEventListenerConfigurationBuilder
 	private DeployementType deployementType;
 	private Path source;
 	private Path target;
+	private Path targetPrefix;
 	
 	public DeployerEventListenerConfigurationBuilder setApplicationServer(ApplicationServer applicationServer)
 	{
@@ -35,8 +36,14 @@ public class DeployerEventListenerConfigurationBuilder
 		return this;
 	}
 	
+	public DeployerEventListenerConfigurationBuilder setTargetPrefix(Path targetPrefix)
+	{
+		this.targetPrefix = targetPrefix;
+		return this;
+	}
+	
 	public DeployerEventListenerConfiguration createDeployerEventListenerConfiguration()
 	{
-		return new DeployerEventListenerConfiguration(this.applicationServer, this.deployementType, this.source, this.target);
+		return new DeployerEventListenerConfiguration(this.applicationServer, this.deployementType, this.source, this.target, this.targetPrefix);
 	}
 }

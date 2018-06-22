@@ -41,6 +41,7 @@ public abstract class AbstractDeployerEventListener implements FolderEventListen
 				FileUtils.forceMkdir(to.getParent().toFile());
 				Files.createFile(to);
 			}
+			LOGGER.info(" >> a : {}", to);
 		}
 		catch (IOException e) {
 			LOGGER.error("Create '{}' fail", path, e);
@@ -61,6 +62,7 @@ public abstract class AbstractDeployerEventListener implements FolderEventListen
 					LOGGER.debug("Delete File '{}'", to);
 					Files.delete(to);
 				}
+				LOGGER.info(" >> d : {}", to);
 			}
 		}
 		catch (IOException e) {
@@ -79,6 +81,7 @@ public abstract class AbstractDeployerEventListener implements FolderEventListen
 				FileUtils.forceMkdir(to.getParent().toFile());
 				Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
 			}
+			LOGGER.info(" >> m : {}", to);
 		}
 		catch (IOException e) {
 			LOGGER.error("Copy '{}' fail", path, e);

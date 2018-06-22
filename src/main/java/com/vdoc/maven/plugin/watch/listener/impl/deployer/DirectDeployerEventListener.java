@@ -21,6 +21,6 @@ public class DirectDeployerEventListener extends AbstractVDocDeployerEventListen
 	@Override
 	protected Path getTo(Path path)
 	{
-		return this.ear.resolve(path);
+		return this.ear.resolve(this.configuration.getTargetPrefix().resolve(path));
 	}
 }
