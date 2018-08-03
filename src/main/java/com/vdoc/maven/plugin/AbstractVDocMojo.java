@@ -1,5 +1,8 @@
 package com.vdoc.maven.plugin;
 
+import com.vdoc.maven.plugin.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.project.ProjectContext;
+import com.vdoc.maven.plugin.project.ProjectContextFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.maven.execution.MavenSession;
@@ -66,7 +69,7 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
      * svn : http://svn.apache.org/repos/asf/maven/plugins/tags/maven-jar-plugin-2.5
      *
      * @param basedir
-     * @param finalName
+     * @param finalNameTest
      * @param classifier
      * @return
      */
@@ -78,6 +81,10 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
         }
 
         return new File(basedir, finalNameTest + classifier + ".jar");
+    }
+
+    public ProjectContext findProjectContext() {
+        return ProjectContextFactory.getInstance(this.project);
     }
 
     public MavenProject getProject() {
