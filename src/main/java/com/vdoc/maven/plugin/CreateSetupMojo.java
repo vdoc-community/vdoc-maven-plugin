@@ -2,6 +2,9 @@ package com.vdoc.maven.plugin;
 
 import com.vdoc.maven.plugin.create.setup.enums.PackagingType;
 import com.vdoc.maven.plugin.packaging.Packaging;
+import com.vdoc.maven.plugin.packaging.ZipEntryFilter;
+import com.vdoc.maven.plugin.packaging.impl.filters.VersionPropertyFilter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -17,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -119,6 +123,8 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 	@Parameter(defaultValue = "false")
 	private boolean includeTestDataCreation;
 	
+	private List<ZipEntryFilter> zipEntryFilters = new ArrayList<>();
+	
 	/**
 	 * TODO :
 	 */
@@ -136,6 +142,9 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 			LOGGER.warn("This mojo can't work for pom packaging project!");
 			return;
 		}
+		
+		// TODO : very very poor code
+		this.zipEntryFilters.add(new VersionPropertyFilter(StringUtils.substringBeforeLast(this.project.getVersion(), "."), "UTF-8"));
 		
 		File createdSetup;
 		try {
@@ -290,5 +299,10 @@ public class CreateSetupMojo extends AbstractVDocMojo {
 	 **/
 	public Set<String> getFinalZipEntrys() {
 		return finalZipEntrys;
+	}
+	
+	public List<ZipEntryFilter> getZipEntryFilters()
+	{
+		return zipEntryFilters;
 	}
 }
