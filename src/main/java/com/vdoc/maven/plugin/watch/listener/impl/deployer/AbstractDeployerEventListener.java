@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.watch.listener.impl;
+package com.vdoc.maven.plugin.watch.listener.impl.deployer;
 
 import com.vdoc.maven.plugin.watch.listener.FolderEventListener;
 import org.apache.commons.io.FileUtils;
@@ -13,28 +13,25 @@ import java.nio.file.StandardCopyOption;
 /**
  * Created by famaridon on 15/03/2017.
  */
-public abstract class AbstractVDocEventListener implements FolderEventListener {
-
-	protected final Path watchedFolder;
-	protected final Path vdocHome;
-	protected final Path ear;
-	protected final Path war;
-	protected final Path custom;
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractVDocEventListener.class);
-
-	public AbstractVDocEventListener(Path watchedFolder, Path vdocHome) {
-		this.watchedFolder = watchedFolder;
-		this.vdocHome = vdocHome;
-		this.ear = vdocHome.resolve("JBoss/server/all/deploy/vdoc.ear/");
-		this.war = ear.resolve("vdoc.war");
-		this.custom = war.resolve("WEB-INF/storage/custom");
+public abstract class AbstractDeployerEventListener implements FolderEventListener
+{
+	
+	protected final DeployerEventListenerConfiguration configuration;
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDeployerEventListener.class);
+	
+	public AbstractDeployerEventListener(DeployerEventListenerConfiguration configuration)
+	{
+		this.configuration = configuration;
+		
 	}
-
+	
 	@Override
-	public void onCreate(Path path) {
+	public void onCreate(Path path)
+	{
 		try {
-			Path from = watchedFolder.resolve(path);
-			Path to = getTo(path);
+			Path from = this.configuration.getSource().resolve(path);
+			Path to = this.getTo(path);
 			if (Files.isDirectory(from)) {
 				LOGGER.debug("Create directory '{}'", to);
 				FileUtils.forceMkdir(to.toFile());
@@ -44,17 +41,18 @@ public abstract class AbstractVDocEventListener implements FolderEventListener {
 				FileUtils.forceMkdir(to.getParent().toFile());
 				Files.createFile(to);
 			}
+			LOGGER.info(" >> a : {}", to);
 		}
 		catch (IOException e) {
 			LOGGER.error("Create '{}' fail", path, e);
 		}
 	}
-
-
+	
 	@Override
-	public void onDelete(Path path) {
+	public void onDelete(Path path)
+	{
 		try {
-			Path to = getTo(path);
+			Path to = this.getTo(path);
 			if (Files.exists(to)) {
 				if (Files.isDirectory(to)) {
 					LOGGER.debug("Delete directory '{}'", to);
@@ -64,28 +62,31 @@ public abstract class AbstractVDocEventListener implements FolderEventListener {
 					LOGGER.debug("Delete File '{}'", to);
 					Files.delete(to);
 				}
+				LOGGER.info(" >> d : {}", to);
 			}
 		}
 		catch (IOException e) {
 			LOGGER.error("Delete '{}' fail", path, e);
 		}
 	}
-
+	
 	@Override
-	public void onModify(Path path) {
+	public void onModify(Path path)
+	{
 		try {
-			Path from = watchedFolder.resolve(path);
-			Path to = getTo(path);
+			Path from = this.configuration.getSource().resolve(path);
+			Path to = this.getTo(path);
 			if (!Files.isDirectory(from)) {
 				LOGGER.debug("Copy from '{}' to '{}'", from, to);
 				FileUtils.forceMkdir(to.getParent().toFile());
 				Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
 			}
+			LOGGER.info(" >> m : {}", to);
 		}
 		catch (IOException e) {
 			LOGGER.error("Copy '{}' fail", path, e);
 		}
 	}
-
+	
 	protected abstract Path getTo(Path path);
 }
