@@ -43,11 +43,6 @@
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.3.1</version>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -138,6 +133,20 @@
                 <configuration>
                     <uniqueVersion>true</uniqueVersion>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.vdoc.maven</groupId>
+                <artifactId>vdoc-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <id>doc</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>generate-plugin-doc</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
 
