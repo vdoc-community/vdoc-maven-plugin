@@ -1,1 +1,1 @@
-Go to http://famaridon.github.io/vdoc-maven-plugin
+Go to https://vdoc-community.github.io/vdoc-maven-plugin/
