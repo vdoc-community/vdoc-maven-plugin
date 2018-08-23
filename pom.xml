@@ -6,7 +6,7 @@
 
     <groupId>com.vdoc.maven</groupId>
     <artifactId>vdoc-maven-plugin</artifactId>
-    <version>14.2.21-SNAPSHOT</version>
+    <version>14.3.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <properties>
@@ -92,9 +92,10 @@
             <plugin>
                 <groupId>com.amashchenko.maven.plugin</groupId>
                 <artifactId>gitflow-maven-plugin</artifactId>
-                <version>1.5.0</version>
+                <version>1.9.0</version>
                 <configuration>
                     <allowSnapshots>true</allowSnapshots>
+                    <versionDigitToIncrement>1</versionDigitToIncrement>
                 </configuration>
             </plugin>
 
