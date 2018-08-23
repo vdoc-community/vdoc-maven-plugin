@@ -177,14 +177,12 @@
 
     <distributionManagement>
         <repository>
-            <id>vdoc</id>
-            <name>VDoc internal releases repository</name>
-            <url>https://developers.visiativsoftware.com/nexus/content/repositories/releases/</url>
+            <id>java-process-private-release</id>
+            <url>https://repository.devops.moovapps.com/repository/java-process-private-releases/</url>
         </repository>
         <snapshotRepository>
-            <id>vdoc.snapshot</id>
-            <name>VDoc internal snapshot repository</name>
-            <url>https://developers.visiativsoftware.com/nexus/content/repositories/snapshots/</url>
+            <id>java-process-private-snapshot</id>
+            <url>https://repository.devops.moovapps.com/repository/java-process-private-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
