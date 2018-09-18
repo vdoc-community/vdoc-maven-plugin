@@ -5,6 +5,7 @@ import com.vdoc.maven.plugin.CreateSetupMojo;
 import com.vdoc.maven.plugin.create.setup.beans.CompletedModule;
 import com.vdoc.maven.plugin.create.setup.enums.PackagingType;
 import com.vdoc.maven.plugin.packaging.Packaging;
+import com.vdoc.maven.plugin.packaging.ZipEntryFilter;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -200,7 +202,13 @@ public abstract class AbstractPackaging implements Packaging {
 		outputStream.putArchiveEntry(tarEntry);
 		
 		if (directory.isFile()) {
-			try (FileInputStream fis = new FileInputStream(directory)) {
+			File file = directory;
+			for (ZipEntryFilter zipEntryFilter : this.createSetupMojo.getZipEntryFilters()) {
+				if(zipEntryFilter.canFilter(file)){
+					file = zipEntryFilter.filter(file);
+				}
+			}
+			try (FileInputStream fis = new FileInputStream(file)) {
 				IOUtils.copy(fis, outputStream);
 			}
 			outputStream.closeArchiveEntry();
@@ -255,7 +263,8 @@ public abstract class AbstractPackaging implements Packaging {
 		return vdocTestDataOutput;
 	}
 	
-	protected File createMetaSetupTestData(File vdocAppOutput) throws IOException, MojoExecutionException {
+	protected File createMetaSetupTestData(File vdocAppOutput) throws IOException
+	{
 		File metaAppOutput = new File(getBuildDirectory(), "tests-data-"+getSetupName() + '-' + SETUP_SUFFIX + ".zip");
 		try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(metaAppOutput)) {
 			for (Resource r : getProject().getTestResources()) {

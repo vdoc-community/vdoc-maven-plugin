@@ -6,7 +6,7 @@
 
     <groupId>com.vdoc.maven</groupId>
     <artifactId>vdoc-maven-plugin</artifactId>
-    <version>14.2.20</version>
+    <version>14.3.0</version>
     <packaging>maven-plugin</packaging>
 
     <properties>
@@ -62,7 +62,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>[2.3.20,)</version>
+            <version>2.3.25-incubating</version>
         </dependency>
 
         <!-- Logger API -->
@@ -92,9 +92,10 @@
             <plugin>
                 <groupId>com.amashchenko.maven.plugin</groupId>
                 <artifactId>gitflow-maven-plugin</artifactId>
-                <version>1.5.0</version>
+                <version>1.9.0</version>
                 <configuration>
                     <allowSnapshots>true</allowSnapshots>
+                    <versionDigitToIncrement>1</versionDigitToIncrement>
                 </configuration>
             </plugin>
 
@@ -168,14 +169,12 @@
 
     <distributionManagement>
         <repository>
-            <id>vdoc</id>
-            <name>VDoc internal releases repository</name>
-            <url>https://developers.visiativsoftware.com/nexus/content/repositories/releases/</url>
+            <id>java-process-private-release</id>
+            <url>https://repository.devops.moovapps.com/repository/java-process-private-releases/</url>
         </repository>
         <snapshotRepository>
-            <id>vdoc.snapshot</id>
-            <name>VDoc internal snapshot repository</name>
-            <url>https://developers.visiativsoftware.com/nexus/content/repositories/snapshots/</url>
+            <id>java-process-private-snapshot</id>
+            <url>https://repository.devops.moovapps.com/repository/java-process-private-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
