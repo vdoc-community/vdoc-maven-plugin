@@ -16,20 +16,20 @@ public class CustomProjectContext extends AbstractProjectContext implements Proj
   }
 
   private String findMinimumRuntimeVersion(MavenProject project) {
-    if (project.getParent() != null) { // can be an Apps
-      if (ProjectContextFactory.COM_VDOC_ENGINEERING_GROUP_ID
-          .equals(project.getParent().getGroupId())
-          && ProjectContextFactory.SDK_ADVANCED_ARTIFACT_ID
-          .equals(project.getParent().getArtifactId())) {
-        return project.getVersion();
-      } else {
-        return findMinimumRuntimeVersion(project.getParent());
-      }
-    } else {
+    if (project.getParent() == null) {
+      // we are on root level project  without finding on SDK parent
       throw new IllegalStateException(
           "Can't find the project minimum runtime version this project must have this parent "
               + ProjectContextFactory.COM_VDOC_ENGINEERING_GROUP_ID + ":"
               + ProjectContextFactory.SDK_ADVANCED_ARTIFACT_ID);
+    }
+    if (ProjectContextFactory.COM_VDOC_ENGINEERING_GROUP_ID
+        .equals(project.getParent().getGroupId())
+        && ProjectContextFactory.SDK_ADVANCED_ARTIFACT_ID
+        .equals(project.getParent().getArtifactId())) {
+      return project.getVersion();
+    } else {
+      return findMinimumRuntimeVersion(project.getParent());
     }
   }
 }
