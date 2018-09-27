@@ -149,10 +149,12 @@ public class WatchMojo extends AbstractVDocMojo
 	
 	private void initVDocHome() throws MojoExecutionException
 	{
-		String vdocHomes = System.getenv("VDOC_HOMES");
-		if (StringUtils.isNoneEmpty(vdocHomes)) {
-			getLog().info("VDOC_HOMES found we use it (ignore vdocHome)");
-			this.vdocHome = new File(vdocHomes, this.project.getVersion());
+		if(this.vdocHome == null) {
+			String vdocHomes = System.getenv("VDOC_HOMES");
+			if (StringUtils.isNoneEmpty(vdocHomes)) {
+				getLog().info("VDOC_HOMES found we use it (ignore vdocHome)");
+				this.vdocHome = new File(vdocHomes, this.project.getVersion());
+			}
 		}
 		if ((this.vdocHome == null) || !this.vdocHome.exists() || this.getProject().getFile().equals(vdocHome)) {
 			throw new MojoExecutionException("VDoc home not found or invalid path. " + vdocHome);
