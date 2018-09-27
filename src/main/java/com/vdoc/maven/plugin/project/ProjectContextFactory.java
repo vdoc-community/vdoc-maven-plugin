@@ -17,7 +17,7 @@ public class ProjectContextFactory {
   public static ProjectContext getInstance(MavenProject mavenProject) {
     if (isCoreModule(mavenProject)) {
       return new CoreProjectContext(mavenProject);
-    } else if (isCoreModule(mavenProject)) {
+    } else if (isAppsModule(mavenProject)) {
       return new CustomProjectContext(mavenProject);
     } else {
       throw new IllegalStateException("Project context can't found!");
@@ -48,7 +48,6 @@ public class ProjectContextFactory {
       }
     }
     return false;
-
   }
 
 }

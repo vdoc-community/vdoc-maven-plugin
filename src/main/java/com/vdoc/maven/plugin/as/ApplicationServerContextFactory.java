@@ -12,6 +12,10 @@ public class ApplicationServerContextFactory {
   }
 
   public static ApplicationServerContext newInstance(ProjectContext projectContext) {
+
+    // TODO check for vdoc home or VDOC_HOMES
+
+    // an home is forced in properties.
     projectContext.getMavenProject().getProperties().getProperty("vdocHome");
     return null;
   }
