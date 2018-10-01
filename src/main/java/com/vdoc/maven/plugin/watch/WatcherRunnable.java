@@ -82,11 +82,11 @@ public class WatcherRunnable implements Runnable {
 				if (Files.isDirectory(folder)) {
 					registerFolder(folder);
 				}
-				folderEventListener.onCreate(relativeFolderPath);
+				folderEventListener.onCreate(watchedFolder, relativeFolderPath);
 			} else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
-				folderEventListener.onDelete(relativeFolderPath);
+				folderEventListener.onDelete(watchedFolder, relativeFolderPath);
 			} else if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
-				folderEventListener.onModify(relativeFolderPath);
+				folderEventListener.onModify(watchedFolder, relativeFolderPath);
 			}
 		}
 	}

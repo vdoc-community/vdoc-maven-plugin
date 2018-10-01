@@ -1,5 +1,13 @@
 package com.vdoc.maven.plugin;
 
+import com.vdoc.maven.plugin.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.project.ProjectContext;
+import com.vdoc.maven.plugin.watch.WatcherRunnable;
+import com.vdoc.maven.plugin.watch.listener.impl.deployer.DeployerEventListenerFactory;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -23,41 +31,37 @@ public class WatchMojo extends AbstractDeployerVDocMojo {
 
 	protected List<Path> sourceCustoms = new ArrayList<>();
 
-//	@Parameter(required = true, defaultValue = "APPS")
-//	protected WatchType watchType;
-	
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-//		if ((this.vdocHome == null) || !this.vdocHome.exists() || this.getProject().getFile().equals(vdocHome)) {
-//			LOGGER.error("VDoc home not found or invalid path.");
-//			return;
-//		}
-//		LOGGER.info("Target VDoc at {}", vdocHome);
-//
-//		this.initSourceCustoms();
-//
-//		ExecutorService executor = Executors.newCachedThreadPool();
-//		CompletionService<String> completionService = new ExecutorCompletionService<>(executor);
-//		try {
-//			for (Path sourceCustom : this.sourceCustoms) {
-//				WatcherRunnable runnable = new WatcherRunnable(sourceCustom);
-//				runnable.addFolderEventListener(this.watchType.getFolderEventListener(sourceCustom, Paths.get(this.vdocHome.toURI())));
-//				runnable.addExcludeMatcher("*___jb_*"); // exclude jetbrain files
-//				completionService.submit(runnable, "completed");
-//			}
-//
-//			for (Path sourceCustom : this.sourceCustoms) {
-//				completionService.take();
-//			}
-//		}
-//		catch (InterruptedException e) {
-//			// clean up state...
-//			Thread.currentThread().interrupt();
-//			throw new MojoFailureException("Can't wait for completion", e);
-//		}
-//		finally {
-//			executor.shutdown();
-//		}
+
+
+		ProjectContext projectContext = this.findProjectContext();
+		ApplicationServerContext applicationServerContext = this.findApplicationServerContext();
+
+		this.initSourceCustoms();
+
+		ExecutorService executor = Executors.newCachedThreadPool();
+		CompletionService<String> completionService = new ExecutorCompletionService<>(executor);
+		try {
+			for (Path sourceCustom : this.sourceCustoms) {
+				WatcherRunnable runnable = new WatcherRunnable(sourceCustom);
+				runnable.addFolderEventListener(DeployerEventListenerFactory.newInstance(applicationServerContext,projectContext));
+				runnable.addExcludeMatcher("*___jb_*"); // exclude jetbrain files
+				completionService.submit(runnable, "completed");
+			}
+
+			for (Path sourceCustom : this.sourceCustoms) {
+				completionService.take();
+			}
+		}
+		catch (InterruptedException e) {
+			// clean up state...
+			Thread.currentThread().interrupt();
+			throw new MojoFailureException("Can't wait for completion", e);
+		}
+		finally {
+			executor.shutdown();
+		}
 		
 	}
 	

@@ -1,5 +1,7 @@
 package com.vdoc.maven.plugin.watch.listener.impl.deployer;
 
+import com.vdoc.maven.plugin.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.project.ProjectContext;
 import com.vdoc.maven.plugin.watch.listener.FolderEventListener;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -13,25 +15,28 @@ import java.nio.file.StandardCopyOption;
 /**
  * Created by famaridon on 15/03/2017.
  */
-public abstract class AbstractDeployerEventListener implements FolderEventListener
+public class VDocDeployerEventListener implements FolderEventListener
 {
 	
-	protected final DeployerEventListenerConfiguration configuration;
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDeployerEventListener.class);
-	
-	public AbstractDeployerEventListener(DeployerEventListenerConfiguration configuration)
-	{
-		this.configuration = configuration;
-		
+	private static final Logger LOGGER = LoggerFactory.getLogger(VDocDeployerEventListener.class);
+
+	protected final ApplicationServerContext applicationServerContext;
+	protected final ProjectContext projectContext;
+
+	public VDocDeployerEventListener(
+			ApplicationServerContext applicationServerContext,
+			ProjectContext projectContext) {
+		this.applicationServerContext = applicationServerContext;
+		this.projectContext = projectContext;
 	}
-	
+
+
 	@Override
-	public void onCreate(Path path)
+	public void onCreate(Path parent, Path relativePath)
 	{
 		try {
-			Path from = this.configuration.getSource().resolve(path);
-			Path to = this.getTo(path);
+			Path from = parent.resolve(relativePath);
+			Path to = this.getTo(relativePath);
 			if (Files.isDirectory(from)) {
 				LOGGER.debug("Create directory '{}'", to);
 				FileUtils.forceMkdir(to.toFile());
@@ -44,15 +49,15 @@ public abstract class AbstractDeployerEventListener implements FolderEventListen
 			LOGGER.info(" >> a : {}", to);
 		}
 		catch (IOException e) {
-			LOGGER.error("Create '{}' fail", path, e);
+			LOGGER.error("Create '{}' fail", relativePath, e);
 		}
 	}
 	
 	@Override
-	public void onDelete(Path path)
+	public void onDelete(Path parent, Path relativePath)
 	{
 		try {
-			Path to = this.getTo(path);
+			Path to = this.getTo(relativePath);
 			if (Files.exists(to)) {
 				if (Files.isDirectory(to)) {
 					LOGGER.debug("Delete directory '{}'", to);
@@ -66,16 +71,16 @@ public abstract class AbstractDeployerEventListener implements FolderEventListen
 			}
 		}
 		catch (IOException e) {
-			LOGGER.error("Delete '{}' fail", path, e);
+			LOGGER.error("Delete '{}' fail", relativePath, e);
 		}
 	}
 	
 	@Override
-	public void onModify(Path path)
+	public void onModify(Path parent, Path relativePath)
 	{
 		try {
-			Path from = this.configuration.getSource().resolve(path);
-			Path to = this.getTo(path);
+			Path from = parent.resolve(relativePath);
+			Path to = this.getTo(relativePath);
 			if (!Files.isDirectory(from)) {
 				LOGGER.debug("Copy from '{}' to '{}'", from, to);
 				FileUtils.forceMkdir(to.getParent().toFile());
@@ -84,9 +89,11 @@ public abstract class AbstractDeployerEventListener implements FolderEventListen
 			LOGGER.info(" >> m : {}", to);
 		}
 		catch (IOException e) {
-			LOGGER.error("Copy '{}' fail", path, e);
+			LOGGER.error("Modify '{}' fail", relativePath, e);
 		}
 	}
 	
-	protected abstract Path getTo(Path path);
+	protected Path getTo(Path relativePath){
+		return this.applicationServerContext.getEar().resolve(relativePath);
+	}
 }

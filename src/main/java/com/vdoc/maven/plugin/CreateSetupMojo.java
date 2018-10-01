@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * this task is used to create a project setup.
  */
 @Mojo(name = "create-setup", threadSafe = true, defaultPhase = LifecyclePhase.PACKAGE)
-public class CreateSetupMojo extends AbstractDeployerVDocMojo {
+public class CreateSetupMojo extends AbstractVDocMojo {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CreateSetupMojo.class);
   /**
