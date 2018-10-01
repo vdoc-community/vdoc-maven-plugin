@@ -1,22 +1,20 @@
 package com.vdoc.maven.plugin.as;
 
-import com.vdoc.maven.plugin.project.ProjectContext;
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ApplicationServerContextFactory {
+
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(ApplicationServerContextFactory.class);
 
   private ApplicationServerContextFactory() {
 
   }
 
-  public static ApplicationServerContext newInstance(ProjectContext projectContext) {
-
-    // TODO check for vdoc home or VDOC_HOMES
-
-    // an home is forced in properties.
-    projectContext.getMavenProject().getProperties().getProperty("vdocHome");
+  public static ApplicationServerContext newInstance(File path) {
     return null;
   }
+
 }

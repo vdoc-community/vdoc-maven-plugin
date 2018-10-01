@@ -2,40 +2,134 @@ package com.vdoc.maven.plugin;
 
 import com.vdoc.maven.plugin.as.ApplicationServerContext;
 import com.vdoc.maven.plugin.as.ApplicationServerContextFactory;
+import com.vdoc.maven.plugin.project.ProjectContext;
+import com.vdoc.maven.plugin.versions.filter.GreaterVersionDirectoryFilter;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.components.interactivity.Prompter;
+import org.codehaus.plexus.components.interactivity.PrompterException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by famaridon on 19/05/2014.
  */
 public abstract class AbstractDeployerVDocMojo extends AbstractVDocMojo {
 
-    /**
-     * the VDoc home folder if set the apps is copied into apps folder.
-     */
-    @Parameter(required = false)
-    private File vdocHome;
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDeployerVDocMojo.class);
+  public static final String VDOC_HOMES_ENV = "VDOC_HOMES";
+
+  /**
+   * the VDoc home folder if set the apps is copied into apps folder.
+   */
+  @Parameter(required = false)
+  private File vdocHome;
+
+  @Component
+  private Prompter prompter;
 
 
-    protected ApplicationServerContext findApplicationServerContext() {
-        return ApplicationServerContextFactory.newInstance(this.findProjectContext());
+  protected ApplicationServerContext findApplicationServerContext() {
+    ProjectContext projectContext = this.findProjectContext();
+    return ApplicationServerContextFactory.newInstance(findApplicationServer(projectContext));
+  }
+
+  private File findApplicationServer(ProjectContext projectContext) {
+    File home = null;
+    // an home is forced in properties.
+    home = findByProperty(projectContext, home);
+
+    // no home search into VDOC_HOMES valid versions
+    if (home == null) {
+      home = findByVDocHome(projectContext, home);
     }
 
-    /**
-     * get {@link AbstractDeployerVDocMojo#vdocHome} property
-     *
-     * @return get the vdocHome property
-     **/
-    public File getVdocHome() {
-        return vdocHome;
+    return home;
+  }
+
+  private File findByVDocHome(ProjectContext projectContext, File home) {
+    LOGGER.info("vdocHome property is not set use " + VDOC_HOMES_ENV + " environment variable");
+    String vdocHomesPath = System.getenv(VDOC_HOMES_ENV);
+    if (StringUtils.isNotBlank(vdocHomesPath)) {
+      File vdocHomes = new File(vdocHomesPath);
+      if (!vdocHomes.exists()) {
+        LOGGER.warn("'{}' doesn't exist", vdocHomesPath);
+      } else if (!vdocHomes.isDirectory()) {
+        LOGGER.warn("'{}' is not a directory", vdocHomesPath);
+      } else {
+        // search for valid versions
+        File[] validVersions = vdocHomes
+            .listFiles(new GreaterVersionDirectoryFilter(projectContext));
+
+        if (validVersions.length == 0) {
+          throw new IllegalStateException("No valid home found!");
+        } else if (validVersions.length == 1) {
+          home = validVersions[0];
+        } else {
+          home = selectVersion(validVersions);
+        }
+      }
+    }
+    return home;
+  }
+
+  private File selectVersion(File[] validVersions) {
+    File home;
+    List<String> options = new ArrayList<>(validVersions.length);
+    StringBuilder message = new StringBuilder("Choose the target version :  \n");
+
+    for (int i = 0; i < validVersions.length; i++) {
+      message.append(String.format("\t %1s. %2s \n", i, validVersions[i].getName()));
+      options.add(Integer.toString(i));
+    }
+    message.append("options :");
+
+    int selectedVersion = 0;
+    try {
+      selectedVersion = Integer.parseInt(prompter.prompt(message.toString(), options, "0"));
+    } catch (PrompterException e) {
+      throw new IllegalStateException(e);
     }
 
-    /**
-     * set {@link AbstractDeployerVDocMojo#vdocHome} property
-     *
-     * @param vdocHome set the vdocHome property
-     **/
-    public void setVdocHome(File vdocHome) {
-        this.vdocHome = vdocHome;
+    home = validVersions[selectedVersion];
+    return home;
+  }
+
+  private File findByProperty(ProjectContext projectContext, File home) {
+    String hardHomePath = projectContext.getMavenProject().getProperties().getProperty("vdocHome");
+    if (StringUtils.isNotBlank(hardHomePath)) {
+      LOGGER.info("vdocHome property is set to '{}' try to use it.", hardHomePath);
+      File hardHome = new File(hardHomePath);
+      if (!hardHome.exists()) {
+        LOGGER.warn("'{}' doesn't exist", hardHomePath);
+      } else if (!hardHome.isDirectory()) {
+        LOGGER.warn("'{}' is not a directory", hardHomePath);
+      } else {
+        home = hardHome;
+      }
     }
+    return home;
+  }
+
+  /**
+   * get {@link AbstractDeployerVDocMojo#vdocHome} property
+   *
+   * @return get the vdocHome property
+   **/
+  public File getVdocHome() {
+    return vdocHome;
+  }
+
+  /**
+   * set {@link AbstractDeployerVDocMojo#vdocHome} property
+   *
+   * @param vdocHome set the vdocHome property
+   **/
+  public void setVdocHome(File vdocHome) {
+    this.vdocHome = vdocHome;
+  }
 }

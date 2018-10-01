@@ -1,5 +1,6 @@
 package com.vdoc.maven.plugin;
 
+import com.vdoc.maven.plugin.as.ApplicationServerContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -48,6 +49,8 @@ public class HardDeployMojo extends AbstractDeployerVDocMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+
+        ApplicationServerContext applicationServerContext = this.findApplicationServerContext();
 
 //        this.getProject().getFile();
 //        if ((this.vdocHome == null) || !this.vdocHome.exists() || this.getProject().getFile().equals(vdocHome)) {
