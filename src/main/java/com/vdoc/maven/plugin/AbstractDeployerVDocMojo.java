@@ -22,6 +22,8 @@ public abstract class AbstractDeployerVDocMojo extends AbstractVDocMojo {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDeployerVDocMojo.class);
   public static final String VDOC_HOMES_ENV = "VDOC_HOMES";
+  private static ApplicationServerContext applicationServerContext = null;
+  public static final Object applicationServerContextWriteLock = new Object();
 
   /**
    * the VDoc home folder if set the apps is copied into apps folder.
@@ -34,24 +36,34 @@ public abstract class AbstractDeployerVDocMojo extends AbstractVDocMojo {
 
 
   protected ApplicationServerContext findApplicationServerContext() {
-    ProjectContext projectContext = this.findProjectContext();
-    return ApplicationServerContextFactory.newInstance(findApplicationServer(projectContext));
+
+    // double if check singleton to synchronize all on the first assign.
+    if (applicationServerContext == null) {
+      synchronized (applicationServerContextWriteLock) {
+        if (applicationServerContext == null) {
+          ProjectContext projectContext = this.findProjectContext();
+          applicationServerContext = ApplicationServerContextFactory
+              .newInstance(findApplicationServer(projectContext));
+        }
+      }
+    }
+    return applicationServerContext;
   }
 
   private File findApplicationServer(ProjectContext projectContext) {
     File home = null;
     // an home is forced in properties.
-    home = findByProperty(projectContext, home);
+    home = findByHomeProperties(projectContext, home);
 
     // no home search into VDOC_HOMES valid versions
     if (home == null) {
-      home = findByVDocHome(projectContext, home);
+      home = findInVDocHomes(projectContext, home);
     }
-
+    LOGGER.info("Deployment enable to {}", home);
     return home;
   }
 
-  private File findByVDocHome(ProjectContext projectContext, File home) {
+  private File findInVDocHomes(ProjectContext projectContext, File home) {
     LOGGER.info("vdocHome property is not set use " + VDOC_HOMES_ENV + " environment variable");
     String vdocHomesPath = System.getenv(VDOC_HOMES_ENV);
     if (StringUtils.isNotBlank(vdocHomesPath)) {
@@ -99,17 +111,15 @@ public abstract class AbstractDeployerVDocMojo extends AbstractVDocMojo {
     return home;
   }
 
-  private File findByProperty(ProjectContext projectContext, File home) {
-    String hardHomePath = projectContext.getMavenProject().getProperties().getProperty("vdocHome");
-    if (StringUtils.isNotBlank(hardHomePath)) {
-      LOGGER.info("vdocHome property is set to '{}' try to use it.", hardHomePath);
-      File hardHome = new File(hardHomePath);
-      if (!hardHome.exists()) {
-        LOGGER.warn("'{}' doesn't exist", hardHomePath);
-      } else if (!hardHome.isDirectory()) {
-        LOGGER.warn("'{}' is not a directory", hardHomePath);
+  private File findByHomeProperties(ProjectContext projectContext, File home) {
+    if (this.vdocHome != null) {
+      LOGGER.info("vdocHome property is set to '{}' try to use it.", this.vdocHome);
+      if (!this.vdocHome.exists()) {
+        LOGGER.warn("'{}' doesn't exist", this.vdocHome);
+      } else if (!this.vdocHome.isDirectory()) {
+        LOGGER.warn("'{}' is not a directory", this.vdocHome);
       } else {
-        home = hardHome;
+        home = this.vdocHome;
       }
     }
     return home;
