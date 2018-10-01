@@ -59,7 +59,6 @@ public abstract class AbstractDeployerVDocMojo extends AbstractVDocMojo {
     if (home == null) {
       home = findInVDocHomes(projectContext, home);
     }
-    LOGGER.info("Deployment enable to {}", home);
     return home;
   }
 

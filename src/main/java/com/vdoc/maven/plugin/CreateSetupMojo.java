@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 /**
  * this task is used to create a project setup.
  */
-@Mojo(name = "create-setup", threadSafe = false, defaultPhase = LifecyclePhase.PACKAGE)
+@Mojo(name = "create-setup", threadSafe = true, defaultPhase = LifecyclePhase.PACKAGE)
 public class CreateSetupMojo extends AbstractDeployerVDocMojo {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CreateSetupMojo.class);
@@ -127,7 +127,7 @@ public class CreateSetupMojo extends AbstractDeployerVDocMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
 
     if ("pom".equalsIgnoreCase(this.project.getPackaging())) {
-      LOGGER.warn("This mojo can't work for pom packaging project!");
+      LOGGER.info("This mojo do nothing on pom packaging project.");
       return;
     }
 

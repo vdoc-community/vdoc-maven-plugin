@@ -101,7 +101,7 @@ public class AppsPackaging extends AbstractPackaging {
 					this.compressDirectory(output, testJar, "lib/");
 				}
 				else {
-					LOGGER.warn("Test jar not found!");
+					LOGGER.debug("No test jar found.");
 				}
 			}
 			
@@ -164,7 +164,7 @@ public class AppsPackaging extends AbstractPackaging {
 		LOGGER.info("merge local apps");
 		if (depApps != null) {
 			for (File depApp : depApps) {
-				LOGGER.warn("merge {} apps.", depApp.getName());
+				LOGGER.info("merge {} apps.", depApp.getName());
 				this.mergeArchive(output, depApp);
 			}
 		}
