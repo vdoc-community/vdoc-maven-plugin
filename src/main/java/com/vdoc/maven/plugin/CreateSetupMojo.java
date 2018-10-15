@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * this task is used to create a project setup.
  */
 @Mojo(name = "create-setup", threadSafe = true, defaultPhase = LifecyclePhase.PACKAGE)
-public class CreateSetupMojo extends AbstractVDocMojo {
+public class CreateSetupMojo extends AbstractDeployerVDocMojo {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CreateSetupMojo.class);
   /**
@@ -47,12 +47,6 @@ public class CreateSetupMojo extends AbstractVDocMojo {
    */
   @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
   private RepositorySystemSession repoSession;
-
-  /**
-   * The project's remote repositories to use for the resolution of plugins and their dependencies.
-   */
-  @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true)
-  private List<RemoteRepository> remoteRepos;
 
   /**
    * Used for attaching the artifact in the project.
@@ -251,7 +245,7 @@ public class CreateSetupMojo extends AbstractVDocMojo {
    * @return get the remoteRepos property
    **/
   public List<RemoteRepository> getRemoteRepos() {
-    return remoteRepos;
+    return this.project.getRemoteProjectRepositories();
   }
 
   /**

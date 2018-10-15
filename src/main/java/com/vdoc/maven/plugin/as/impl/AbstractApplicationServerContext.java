@@ -10,6 +10,7 @@ public abstract class AbstractApplicationServerContext implements ApplicationSer
   protected final Path ear;
   protected final Path earLib;
   protected final Path war;
+  protected final Path apps;
   protected final Path custom;
 
   public AbstractApplicationServerContext(Path home) {
@@ -18,6 +19,7 @@ public abstract class AbstractApplicationServerContext implements ApplicationSer
     this.earLib = this.ear.resolve("lib");
     this.war = this.ear.resolve("vdoc.war");
     this.custom = this.war.resolve(Paths.get("WEB-INF", "storage", "custom"));
+    this.apps = this.home.resolve(Paths.get("apps"));
   }
 
   @Override
@@ -33,5 +35,10 @@ public abstract class AbstractApplicationServerContext implements ApplicationSer
   @Override
   public Path getCustom() {
     return custom;
+  }
+
+  @Override
+  public Path getApps() {
+    return apps;
   }
 }

@@ -35,7 +35,7 @@ public abstract class AbstractDeployerVDocMojo extends AbstractVDocMojo {
   private Prompter prompter;
 
 
-  protected ApplicationServerContext findApplicationServerContext() {
+  public ApplicationServerContext findApplicationServerContext() {
 
     // double if check singleton to synchronize all on the first assign.
     if (applicationServerContext == null) {
@@ -122,15 +122,6 @@ public abstract class AbstractDeployerVDocMojo extends AbstractVDocMojo {
       }
     }
     return home;
-  }
-
-  /**
-   * get {@link AbstractDeployerVDocMojo#vdocHome} property
-   *
-   * @return get the vdocHome property
-   **/
-  public File getVdocHome() {
-    return vdocHome;
   }
 
   /**

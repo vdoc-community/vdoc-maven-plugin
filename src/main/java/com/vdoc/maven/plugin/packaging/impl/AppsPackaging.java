@@ -45,8 +45,8 @@ public class AppsPackaging extends AbstractPackaging {
 		File vdocAppOutput = createAppsZip();
 		
 		// #5 copy apps to vdoc
-		if ((getVdocHome() != null) && getVdocHome().exists()) {
-			FileUtils.copyFileToDirectory(vdocAppOutput, new File(getVdocHome(), "apps"));
+		if (this.getApplicationServerContext() != null) {
+			FileUtils.copyFileToDirectory(vdocAppOutput, this.getApplicationServerContext().getApps().toFile());
 		}
 		
 		LOGGER.info("create the meta setup zip with apps, documentation, fix, ...");
