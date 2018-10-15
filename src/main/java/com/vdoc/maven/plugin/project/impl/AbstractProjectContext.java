@@ -4,15 +4,18 @@ import com.vdoc.maven.plugin.project.ProjectContext;
 import com.vdoc.maven.plugin.versions.Version;
 import com.vdoc.maven.plugin.versions.VersionParser;
 import java.text.ParseException;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 
 public abstract class AbstractProjectContext implements ProjectContext {
 
   protected final MavenProject mavenProject;
+  protected final MavenSession session;
   protected final Version minimumRuntimeVersion;
 
-  protected AbstractProjectContext(MavenProject mavenProject) {
+  protected AbstractProjectContext(MavenProject mavenProject, MavenSession session) {
     this.mavenProject = mavenProject;
+    this.session = session;
     this.minimumRuntimeVersion = this.parseMinimumRuntimeVersion();
   }
 

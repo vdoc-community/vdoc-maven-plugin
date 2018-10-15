@@ -2,6 +2,7 @@ package com.vdoc.maven.plugin;
 
 import com.vdoc.maven.plugin.as.ApplicationServerContext;
 import com.vdoc.maven.plugin.project.ProjectContext;
+import com.vdoc.maven.plugin.watch.WatchableSource;
 import com.vdoc.maven.plugin.watch.WatcherRunnable;
 import com.vdoc.maven.plugin.watch.listener.impl.deployer.DeployerEventListenerFactory;
 import java.util.concurrent.CompletionService;
@@ -24,12 +25,10 @@ import java.util.List;
 /**
  * this task is used to deploy a project to the target VDoc install.
  */
-@Mojo(name = "watch", threadSafe = true)
+@Mojo(name = "watch", threadSafe = false)
 public class WatchMojo extends AbstractDeployerVDocMojo {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(GeneratePluginDocMojo.class);
-
-	protected List<Path> sourceCustoms = new ArrayList<>();
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -38,19 +37,20 @@ public class WatchMojo extends AbstractDeployerVDocMojo {
 		ProjectContext projectContext = this.findProjectContext();
 		ApplicationServerContext applicationServerContext = this.findApplicationServerContext();
 
-		this.initSourceCustoms();
 
 		ExecutorService executor = Executors.newCachedThreadPool();
 		CompletionService<String> completionService = new ExecutorCompletionService<>(executor);
+		Iterable<WatchableSource> watchableSources = projectContext.getWatchableSources();
 		try {
-			for (Path sourceCustom : this.sourceCustoms) {
-				WatcherRunnable runnable = new WatcherRunnable(sourceCustom);
-				runnable.addFolderEventListener(DeployerEventListenerFactory.newInstance(applicationServerContext,projectContext));
+			for (WatchableSource watchableSource : watchableSources) {
+				WatcherRunnable runnable = new WatcherRunnable(watchableSource.getSource());
+				runnable.addFolderEventListener(DeployerEventListenerFactory.newInstance(applicationServerContext,watchableSource));
+				runnable.addExcludeMatchers(watchableSource.getExcludeMatchers());
 				runnable.addExcludeMatcher("*___jb_*"); // exclude jetbrain files
 				completionService.submit(runnable, "completed");
 			}
 
-			for (Path sourceCustom : this.sourceCustoms) {
+			for (WatchableSource watchableSource : watchableSources) {
 				completionService.take();
 			}
 		}
@@ -63,34 +63,6 @@ public class WatchMojo extends AbstractDeployerVDocMojo {
 			executor.shutdown();
 		}
 		
-	}
-	
-	private void initSourceCustoms() {
-		LOGGER.info("Watch source folders : ");
-		if ("pom".equalsIgnoreCase(this.project.getArtifact().getType())) {
-			throw new NotImplementedException("");
-		}
-		else {
-			List<String> sourceFolders = this.project.getCompileSourceRoots();
-			addSourceCustom(sourceFolders);
-		}
-	}
-	
-	private void addSourceCustom(List<String> sourceFolders) {
-		for (String sourceFolder : sourceFolders) {
-			//Addon
-			addSourceCustom(sourceFolder, "custom");
-			//VDodWAR
-			addSourceCustom(sourceFolder, "webapp");
-		}
-	}
-
-	private void addSourceCustom(String sourceFolder, String folderName) {
-		Path path = Paths.get(sourceFolder).getParent().resolve(folderName);
-		if (Files.exists(path)) {
-			LOGGER.info(" >> {}", path);
-			this.sourceCustoms.add(path);
-		}
 	}
 
 }

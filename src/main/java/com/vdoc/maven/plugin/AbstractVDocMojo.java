@@ -84,7 +84,7 @@ public abstract class AbstractVDocMojo extends AbstractMojo {
     }
 
     public ProjectContext findProjectContext() {
-        return ProjectContextFactory.getInstance(this.project);
+        return ProjectContextFactory.getInstance(this.project, this.session);
     }
 
     public MavenProject getProject() {

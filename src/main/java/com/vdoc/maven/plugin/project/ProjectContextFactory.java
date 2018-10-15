@@ -2,6 +2,7 @@ package com.vdoc.maven.plugin.project;
 
 import com.vdoc.maven.plugin.project.impl.CustomProjectContext;
 import com.vdoc.maven.plugin.project.impl.CoreProjectContext;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 
 public class ProjectContextFactory {
@@ -14,11 +15,11 @@ public class ProjectContextFactory {
   private ProjectContextFactory() {
   }
 
-  public static ProjectContext getInstance(MavenProject mavenProject) {
+  public static ProjectContext getInstance(MavenProject mavenProject, MavenSession session) {
     if (isCoreModule(mavenProject)) {
-      return new CoreProjectContext(mavenProject);
+      return new CoreProjectContext(mavenProject, session);
     } else if (isAppsModule(mavenProject)) {
-      return new CustomProjectContext(mavenProject);
+      return new CustomProjectContext(mavenProject, session);
     } else {
       throw new IllegalStateException("Project context can't found!");
     }

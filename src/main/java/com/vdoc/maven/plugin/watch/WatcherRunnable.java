@@ -2,6 +2,7 @@ package com.vdoc.maven.plugin.watch;
 
 import com.vdoc.maven.plugin.watch.listener.FolderEventListener;
 import com.vdoc.maven.plugin.watch.listener.impl.LoggerEventListener;
+import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,8 @@ public class WatcherRunnable implements Runnable {
 	
 	@Override
 	public void run() {
-		
+
+		LOGGER.info("Start watching {}", this.watchedFolder);
 		folderEventListenerList.add(0,new LoggerEventListener());
 		
 		try {
@@ -126,7 +128,11 @@ public class WatcherRunnable implements Runnable {
 	public List<String> getExcludeMatcherList() {
 		return excludeMatcherList;
 	}
-	
+
+	public boolean addExcludeMatchers(Set<String> matchers) {
+		return excludeMatcherList.addAll(matchers);
+	}
+
 	public boolean addExcludeMatcher(String matcher) {
 		return excludeMatcherList.add(matcher);
 	}

@@ -2,12 +2,24 @@ package com.vdoc.maven.plugin.project.impl;
 
 import com.vdoc.maven.plugin.project.ProjectContext;
 import com.vdoc.maven.plugin.project.ProjectContextFactory;
+import com.vdoc.maven.plugin.watch.WatchableSource;
+import com.vdoc.maven.plugin.watch.listener.impl.CustomWatchableSource;
+import com.vdoc.maven.plugin.watch.listener.impl.WebappWatchableSource;
+import java.io.File;
+import java.io.FileFilter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 
 public class CustomProjectContext extends AbstractProjectContext implements ProjectContext {
 
-  public CustomProjectContext(MavenProject mavenProject) {
-    super(mavenProject);
+  public CustomProjectContext(MavenProject mavenProject, MavenSession session) {
+    super(mavenProject, session);
   }
 
   @Override
@@ -31,5 +43,22 @@ public class CustomProjectContext extends AbstractProjectContext implements Proj
     } else {
       return findMinimumRuntimeVersion(project.getParent());
     }
+  }
+
+  @Override
+  public Iterable<WatchableSource> getWatchableSources() {
+    Set<WatchableSource> watchableSources = new HashSet<>();
+    for (MavenProject project : this.session.getAllProjects()) {
+      for (Resource r : project.getResources()) {
+        File resourcesDirectory = new File(r.getDirectory());
+        File customFolder = new File(resourcesDirectory.getParentFile(), "custom");
+        if (customFolder.isDirectory()) {
+          Path customFolderPath = Paths.get(customFolder.toURI());
+          watchableSources.add(new CustomWatchableSource(customFolderPath));
+          watchableSources.add(new WebappWatchableSource(customFolderPath.resolve("webapp")));
+        }
+      }
+    }
+    return watchableSources;
   }
 }
