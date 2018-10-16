@@ -121,17 +121,4 @@
         </profile>
     </profiles>
 
-    <distributionManagement>
-        <repository>
-            <id>vdoc</id>
-            <name>vdoc repository</name>
-            <url>${r"${vdoc.deploy.server}"}/nexus/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>vdoc.snapshot</id>
-            <name>vdoc snapshot repository</name>
-            <url>${r"${vdoc.deploy.server}"}/nexus/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 </project>
