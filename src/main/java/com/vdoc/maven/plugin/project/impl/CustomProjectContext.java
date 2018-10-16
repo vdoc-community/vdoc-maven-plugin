@@ -39,7 +39,7 @@ public class CustomProjectContext extends AbstractProjectContext implements Proj
         .equals(project.getParent().getGroupId())
         && ProjectContextFactory.SDK_ADVANCED_ARTIFACT_ID
         .equals(project.getParent().getArtifactId())) {
-      return project.getVersion();
+      return project.getParent().getVersion();
     } else {
       return findMinimumRuntimeVersion(project.getParent());
     }

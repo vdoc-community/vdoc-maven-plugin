@@ -2,17 +2,13 @@ package com.vdoc.maven.plugin.project.impl;
 
 import com.vdoc.maven.plugin.project.ProjectContext;
 import com.vdoc.maven.plugin.watch.WatchableSource;
-import com.vdoc.maven.plugin.watch.listener.impl.CustomWatchableSource;
 import com.vdoc.maven.plugin.watch.listener.impl.WebappWatchableSource;
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class CoreProjectContext extends AbstractProjectContext implements ProjectContext {
 

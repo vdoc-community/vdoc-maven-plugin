@@ -44,6 +44,7 @@ public abstract class AbstractDeployerVDocMojo extends AbstractVDocMojo {
           ProjectContext projectContext = this.findProjectContext();
           applicationServerContext = ApplicationServerContextFactory
               .newInstance(findApplicationServer(projectContext));
+          LOGGER.info("Target application server {}", this.applicationServerContext);
         }
       }
     }

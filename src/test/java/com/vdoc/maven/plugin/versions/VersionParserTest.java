@@ -50,7 +50,7 @@ class VersionParserTest {
 
   @Test
   void compareGreaterMinor() throws ParseException {
-    Version big = this.parser.parse("15.10.0");
+    Version big = this.parser.parse("15.3.0");
     Version small = this.parser.parse("15.0.0");
     Assertions.assertFalse(small.isGreater(big));
     Assertions.assertTrue(big.isGreater(small));
@@ -103,6 +103,14 @@ class VersionParserTest {
     Version small = this.parser.parse("15.0.0-SNAPSHOT");
     Assertions.assertTrue(small.isLess(big));
     Assertions.assertFalse(big.isLess(small));
+  }
+
+  @Test
+  void compareGreaterOrEqualsMinor() throws ParseException {
+    Version big = this.parser.parse("15.4.0-SNAPSHOT");
+    Version small = this.parser.parse("15.3.5-SNAPSHOT");
+    Assertions.assertFalse(small.compareTo(big) >= 0);
+    Assertions.assertTrue(big.compareTo(small) >= 0);
   }
 
   @Test

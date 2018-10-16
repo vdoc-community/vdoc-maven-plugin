@@ -41,4 +41,9 @@ public abstract class AbstractApplicationServerContext implements ApplicationSer
   public Path getApps() {
     return apps;
   }
+
+  @Override
+  public String toString() {
+    return home.toString();
+  }
 }
