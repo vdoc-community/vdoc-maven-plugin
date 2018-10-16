@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.InstantiationStrategy;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * this task is used to deploy a project to the target VDoc install.
  */
-@Mojo(name = "watch", threadSafe = false)
+@Mojo(name = "watch", threadSafe = false,instantiationStrategy = InstantiationStrategy.SINGLETON)
 public class WatchMojo extends AbstractDeployerVDocMojo {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(GeneratePluginDocMojo.class);
