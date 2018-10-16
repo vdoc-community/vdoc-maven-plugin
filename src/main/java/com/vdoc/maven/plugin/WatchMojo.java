@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 /**
  * this task is used to deploy a project to the target VDoc install.
  */
-@Mojo(name = "watch", threadSafe = false,instantiationStrategy = InstantiationStrategy.SINGLETON)
+@Mojo(name = "watch", threadSafe = true,instantiationStrategy = InstantiationStrategy.SINGLETON)
 public class WatchMojo extends AbstractDeployerVDocMojo {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(GeneratePluginDocMojo.class);
