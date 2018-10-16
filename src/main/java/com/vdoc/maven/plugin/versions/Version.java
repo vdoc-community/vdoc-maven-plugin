@@ -35,22 +35,7 @@ public class Version implements Comparable<Version>{
   }
 
   public boolean isGreater(Version version) {
-    if(this.major > version.major) {
-      return true;
-    }
-    if(this.minor > version.minor) {
-      return true;
-    }
-    if(this.fix > version.fix) {
-      return true;
-    }
-    if(this.haveFlag() && version.haveFlag()) {
-      return this.flag.compareTo(version.flag) > 0;
-    }
-    if(!this.haveFlag() && version.haveFlag()) {
-      return true;
-    }
-    return false;
+    return this.compareTo(version) > 0;
   }
 
   public boolean haveFlag() {
@@ -62,15 +47,24 @@ public class Version implements Comparable<Version>{
   }
 
   @Override
-  public int compareTo(Version version) {
-    if(this.equals(version)) {
-      return 0;
+  public int compareTo(Version other) {
+    long result = major - other.major;
+    if (result == 0) {
+      result = minor - other.minor;
+      if (result == 0) {
+        result = fix - other.fix;
+        if (result == 0) {
+          if(flag == null && other.flag != null) {
+            result = 1;
+          } else if(flag != null && other.flag == null) {
+            result = -1;
+          } else {
+            result = flag.compareTo(other.flag);
+          }
+        }
+      }
     }
-    if(this.isGreater(version)) {
-      return 1;
-    } else {
-      return -1;
-    }
+    return (int) result;
   }
 
   @Override

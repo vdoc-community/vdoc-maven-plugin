@@ -1,6 +1,5 @@
 package com.vdoc.maven.plugin.versions;
 
-import com.sun.org.apache.regexp.internal.RE;
 import java.text.ParseException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,6 +38,85 @@ class VersionParserTest {
   @Test
   void parseReleaseCandidate() throws ParseException {
     checkVersion(RC_VERSION, RC_FLAG);
+  }
+
+  @Test
+  void compareGreaterMajor() throws ParseException {
+    Version big = this.parser.parse("16.0.0");
+    Version small = this.parser.parse("15.0.0");
+    Assertions.assertFalse(small.isGreater(big));
+    Assertions.assertTrue(big.isGreater(small));
+  }
+
+  @Test
+  void compareGreaterMinor() throws ParseException {
+    Version big = this.parser.parse("15.10.0");
+    Version small = this.parser.parse("15.0.0");
+    Assertions.assertFalse(small.isGreater(big));
+    Assertions.assertTrue(big.isGreater(small));
+  }
+
+  @Test
+  void compareGreaterFix() throws ParseException {
+    Version big = this.parser.parse("15.0.8");
+    Version small = this.parser.parse("15.0.0");
+    Assertions.assertFalse(small.isGreater(big));
+    Assertions.assertTrue(big.isGreater(small));
+  }
+
+  @Test
+  void compareGreaterFlag() throws ParseException {
+    Version big = this.parser.parse("15.0.0");
+    Version small = this.parser.parse("15.0.0-SNAPSHOT");
+    Assertions.assertFalse(small.isGreater(big));
+    Assertions.assertTrue(big.isGreater(small));
+  }
+
+
+  @Test
+  void compareLessMajor() throws ParseException {
+    Version big = this.parser.parse("16.0.0");
+    Version small = this.parser.parse("15.0.0");
+    Assertions.assertTrue(small.isLess(big));
+    Assertions.assertFalse(big.isLess(small));
+  }
+
+  @Test
+  void compareLessMinor() throws ParseException {
+    Version big = this.parser.parse("15.10.0");
+    Version small = this.parser.parse("15.0.0");
+    Assertions.assertTrue(small.isLess(big));
+    Assertions.assertFalse(big.isLess(small));
+  }
+
+  @Test
+  void compareLessFix() throws ParseException {
+    Version big = this.parser.parse("15.0.8");
+    Version small = this.parser.parse("15.0.5");
+    Assertions.assertTrue(small.isLess(big));
+    Assertions.assertFalse(big.isLess(small));
+  }
+
+  @Test
+  void compareLessFlag() throws ParseException {
+    Version big = this.parser.parse("15.0.0");
+    Version small = this.parser.parse("15.0.0-SNAPSHOT");
+    Assertions.assertTrue(small.isLess(big));
+    Assertions.assertFalse(big.isLess(small));
+  }
+
+  @Test
+  void isEquals() throws ParseException {
+    Version first = this.parser.parse("15.4.8");
+    Version second = this.parser.parse("15.4.8");
+    Assertions.assertTrue(first.equals(second));
+  }
+
+  @Test
+  void isEqualsFlags() throws ParseException {
+    Version first = this.parser.parse("15.4.8-SNAPSHOT");
+    Version second = this.parser.parse("15.4.8-SNAPSHOT");
+    Assertions.assertTrue(first.equals(second));
   }
 
   @Test
