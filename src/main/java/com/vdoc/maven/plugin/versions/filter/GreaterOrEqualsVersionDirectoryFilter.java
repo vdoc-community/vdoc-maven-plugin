@@ -9,14 +9,14 @@ import java.text.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GreaterVersionDirectoryFilter implements FileFilter {
+public class GreaterOrEqualsVersionDirectoryFilter implements FileFilter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GreaterVersionDirectoryFilter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GreaterOrEqualsVersionDirectoryFilter.class);
 
   private final ProjectContext projectContext;
   private final VersionParser versionParser;
 
-  public GreaterVersionDirectoryFilter(ProjectContext projectContext) {
+  public GreaterOrEqualsVersionDirectoryFilter(ProjectContext projectContext) {
     this.projectContext = projectContext;
     this.versionParser = new VersionParser();
   }
@@ -30,7 +30,7 @@ public class GreaterVersionDirectoryFilter implements FileFilter {
     boolean valid = false;
     try {
       Version version = this.versionParser.parse(file.getName());
-      valid = version.isGreater(projectContext.getMinimumRuntimeVersion());
+      valid = version.compareTo(projectContext.getMinimumRuntimeVersion()) >= 0 ;
     } catch (ParseException e) {
       LOGGER.warn("Not valid version {}", file.getName());
     }

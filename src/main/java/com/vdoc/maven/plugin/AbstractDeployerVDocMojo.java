@@ -3,7 +3,7 @@ package com.vdoc.maven.plugin;
 import com.vdoc.maven.plugin.as.ApplicationServerContext;
 import com.vdoc.maven.plugin.as.ApplicationServerContextFactory;
 import com.vdoc.maven.plugin.project.ProjectContext;
-import com.vdoc.maven.plugin.versions.filter.GreaterVersionDirectoryFilter;
+import com.vdoc.maven.plugin.versions.filter.GreaterOrEqualsVersionDirectoryFilter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,7 @@ public abstract class AbstractDeployerVDocMojo extends AbstractVDocMojo {
       } else {
         // search for valid versions
         File[] validVersions = vdocHomes
-            .listFiles(new GreaterVersionDirectoryFilter(projectContext));
+            .listFiles(new GreaterOrEqualsVersionDirectoryFilter(projectContext));
 
         if (validVersions.length == 0) {
           throw new IllegalStateException("No valid home found!");
