@@ -1,6 +1,6 @@
-package com.vdoc.maven.plugin.project;
+package com.vdoc.maven.plugin.utils.project;
 
-import com.vdoc.maven.plugin.versions.Version;
+import com.vdoc.maven.plugin.utils.versions.Version;
 import com.vdoc.maven.plugin.watch.WatchableSource;
 import org.apache.maven.project.MavenProject;
 

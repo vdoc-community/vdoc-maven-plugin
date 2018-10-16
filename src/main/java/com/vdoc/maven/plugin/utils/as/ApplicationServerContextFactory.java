@@ -1,7 +1,7 @@
-package com.vdoc.maven.plugin.as;
+package com.vdoc.maven.plugin.utils.as;
 
-import com.vdoc.maven.plugin.as.impl.JBossApplicationServerContext;
-import com.vdoc.maven.plugin.as.impl.WildflyApplicationServerContext;
+import com.vdoc.maven.plugin.utils.as.impl.JBossApplicationServerContext;
+import com.vdoc.maven.plugin.utils.as.impl.WildflyApplicationServerContext;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;

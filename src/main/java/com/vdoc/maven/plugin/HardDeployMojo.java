@@ -1,6 +1,6 @@
 package com.vdoc.maven.plugin;
 
-import com.vdoc.maven.plugin.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.utils.as.ApplicationServerContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;

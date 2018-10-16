@@ -1,8 +1,8 @@
 package com.vdoc.maven.plugin;
 
-import com.vdoc.maven.plugin.as.ApplicationServerContext;
-import com.vdoc.maven.plugin.project.ProjectContext;
-import com.vdoc.maven.plugin.project.ProjectContextFactory;
+import com.vdoc.maven.plugin.utils.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.utils.project.ProjectContext;
+import com.vdoc.maven.plugin.utils.project.ProjectContextFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.maven.execution.MavenSession;

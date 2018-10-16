@@ -1,7 +1,7 @@
-package com.vdoc.maven.plugin.project;
+package com.vdoc.maven.plugin.utils.project;
 
-import com.vdoc.maven.plugin.project.impl.CustomProjectContext;
-import com.vdoc.maven.plugin.project.impl.CoreProjectContext;
+import com.vdoc.maven.plugin.utils.project.impl.CustomProjectContext;
+import com.vdoc.maven.plugin.utils.project.impl.CoreProjectContext;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 

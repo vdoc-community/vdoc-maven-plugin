@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.versions;
+package com.vdoc.maven.plugin.utils.versions;
 
 import java.text.ParseException;
 import java.util.regex.Matcher;

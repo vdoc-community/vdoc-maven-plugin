@@ -1,6 +1,6 @@
-package com.vdoc.maven.plugin.as.impl;
+package com.vdoc.maven.plugin.utils.as.impl;
 
-import com.vdoc.maven.plugin.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.utils.as.ApplicationServerContext;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 

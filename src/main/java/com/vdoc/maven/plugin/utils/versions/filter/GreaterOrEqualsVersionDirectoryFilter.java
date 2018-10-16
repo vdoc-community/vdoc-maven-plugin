@@ -1,8 +1,8 @@
-package com.vdoc.maven.plugin.versions.filter;
+package com.vdoc.maven.plugin.utils.versions.filter;
 
-import com.vdoc.maven.plugin.project.ProjectContext;
-import com.vdoc.maven.plugin.versions.Version;
-import com.vdoc.maven.plugin.versions.VersionParser;
+import com.vdoc.maven.plugin.utils.project.ProjectContext;
+import com.vdoc.maven.plugin.utils.versions.Version;
+import com.vdoc.maven.plugin.utils.versions.VersionParser;
 import java.io.File;
 import java.io.FileFilter;
 import java.text.ParseException;

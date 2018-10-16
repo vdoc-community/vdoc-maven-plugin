@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.as;
+package com.vdoc.maven.plugin.utils.as;
 
 import java.nio.file.Path;
 

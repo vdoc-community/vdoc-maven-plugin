@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.versions;
+package com.vdoc.maven.plugin.utils.versions;
 
 import java.text.ParseException;
 import org.junit.jupiter.api.Assertions;

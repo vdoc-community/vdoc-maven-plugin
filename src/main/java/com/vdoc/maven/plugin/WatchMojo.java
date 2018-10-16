@@ -1,7 +1,7 @@
 package com.vdoc.maven.plugin;
 
-import com.vdoc.maven.plugin.as.ApplicationServerContext;
-import com.vdoc.maven.plugin.project.ProjectContext;
+import com.vdoc.maven.plugin.utils.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.utils.project.ProjectContext;
 import com.vdoc.maven.plugin.watch.WatchableSource;
 import com.vdoc.maven.plugin.watch.WatcherRunnable;
 import com.vdoc.maven.plugin.watch.listener.impl.deployer.DeployerEventListenerFactory;
@@ -9,19 +9,12 @@ import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.InstantiationStrategy;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * this task is used to deploy a project to the target VDoc install.

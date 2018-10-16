@@ -1,6 +1,5 @@
-package com.vdoc.maven.plugin.versions;
+package com.vdoc.maven.plugin.utils.versions;
 
-import java.util.regex.Pattern;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 

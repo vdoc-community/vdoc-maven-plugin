@@ -1,4 +1,4 @@
-package com.vdoc.maven.plugin.versions;
+package com.vdoc.maven.plugin.utils.versions;
 
 public class VersionBuilder {
 

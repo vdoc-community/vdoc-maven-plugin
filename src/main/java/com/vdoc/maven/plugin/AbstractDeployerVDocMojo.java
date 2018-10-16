@@ -1,9 +1,9 @@
 package com.vdoc.maven.plugin;
 
-import com.vdoc.maven.plugin.as.ApplicationServerContext;
-import com.vdoc.maven.plugin.as.ApplicationServerContextFactory;
-import com.vdoc.maven.plugin.project.ProjectContext;
-import com.vdoc.maven.plugin.versions.filter.GreaterOrEqualsVersionDirectoryFilter;
+import com.vdoc.maven.plugin.utils.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.utils.as.ApplicationServerContextFactory;
+import com.vdoc.maven.plugin.utils.project.ProjectContext;
+import com.vdoc.maven.plugin.utils.versions.filter.GreaterOrEqualsVersionDirectoryFilter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

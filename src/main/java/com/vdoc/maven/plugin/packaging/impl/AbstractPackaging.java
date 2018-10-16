@@ -2,7 +2,7 @@ package com.vdoc.maven.plugin.packaging.impl;
 
 import com.moovapps.process.app.deduplicator.ZipApplicationsDeduplicator;
 import com.vdoc.maven.plugin.CreateSetupMojo;
-import com.vdoc.maven.plugin.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.utils.as.ApplicationServerContext;
 import com.vdoc.maven.plugin.create.setup.beans.CompletedModule;
 import com.vdoc.maven.plugin.create.setup.enums.PackagingType;
 import com.vdoc.maven.plugin.packaging.Packaging;

@@ -1,6 +1,6 @@
 package com.vdoc.maven.plugin.watch.listener.impl;
 
-import com.vdoc.maven.plugin.as.ApplicationServerContext;
+import com.vdoc.maven.plugin.utils.as.ApplicationServerContext;
 import java.nio.file.Path;
 
 public class CustomWatchableSource extends AbstractWatchableSource {
