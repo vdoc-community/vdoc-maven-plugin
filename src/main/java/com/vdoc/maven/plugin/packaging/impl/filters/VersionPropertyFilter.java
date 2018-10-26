@@ -31,7 +31,7 @@ public class VersionPropertyFilter implements ZipEntryFilter
 	public File filter(File fileToZip) throws IOException
 	{
 		String content = IOUtils.toString(new FileInputStream(fileToZip), encoding);
-		content = content.replaceAll("\\$\\{apps\\.version}", appsVersion);
+		content = content.replaceFirst("\\<version\\>\\$\\{apps\\.version}\\</version\\>", "<version>"+appsVersion+"</version>");
 		File tmpFileToZip = File.createTempFile(FilenameUtils.getBaseName(fileToZip.getName()), FilenameUtils.getExtension(fileToZip.getName()));
 		try (FileOutputStream fos = new FileOutputStream(tmpFileToZip)) {
 			IOUtils.write(content, fos, encoding);
