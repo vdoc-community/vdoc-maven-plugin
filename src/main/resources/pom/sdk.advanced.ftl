@@ -15,6 +15,7 @@
     <packaging>pom</packaging>
 
     <properties>
+        <javaee7-spec-version>1.0.3.Final</javaee7-spec-version>
         <include.other.modules>false</include.other.modules>
         <includeTestDataCreation>false</includeTestDataCreation>
         <packagingType>APPS</packagingType>
@@ -27,6 +28,13 @@
             <version>${r"${vdoc.version}"}</version>
             <scope>provided</scope>
             <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec</groupId>
+            <artifactId>jboss-javaee-7.0</artifactId>
+            <version>${r"${javaee7-spec-version}"}</version>
+            <type>pom</type>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
