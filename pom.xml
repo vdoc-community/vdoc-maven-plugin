@@ -6,7 +6,7 @@
 
     <groupId>com.vdoc.maven</groupId>
     <artifactId>vdoc-maven-plugin</artifactId>
-    <version>14.3.1</version>
+    <version>15.0.0</version>
     <packaging>maven-plugin</packaging>
 
     <properties>
@@ -27,6 +27,11 @@
             <version>${maven-version}</version>
         </dependency>
         <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-interactivity-api</artifactId>
+            <version>1.0-alpha-6</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
             <version>${maven-version-min}</version>
@@ -42,11 +47,6 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.3.1</version>
         </dependency>
 
         <dependency>
@@ -82,6 +82,13 @@
             <groupId>com.moovapps.process</groupId>
             <artifactId>moovapps-app-deduplicator</artifactId>
             <version>1.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.2.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -140,6 +147,20 @@
                     <uniqueVersion>true</uniqueVersion>
                 </configuration>
             </plugin>
+            <!--<plugin>-->
+                <!--<groupId>com.vdoc.maven</groupId>-->
+                <!--<artifactId>vdoc-maven-plugin</artifactId>-->
+                <!--<version>${project.version}</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>doc</id>-->
+                        <!--<phase>install</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>generate-plugin-doc</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
 
     </build>

@@ -45,8 +45,8 @@ public class AppsPackaging extends AbstractPackaging {
 		File vdocAppOutput = createAppsZip();
 		
 		// #5 copy apps to vdoc
-		if ((getVdocHome() != null) && getVdocHome().exists()) {
-			FileUtils.copyFileToDirectory(vdocAppOutput, new File(getVdocHome(), "apps"));
+		if (this.getApplicationServerContext() != null) {
+			FileUtils.copyFileToDirectory(vdocAppOutput, this.getApplicationServerContext().getApps().toFile());
 		}
 		
 		LOGGER.info("create the meta setup zip with apps, documentation, fix, ...");
@@ -101,7 +101,7 @@ public class AppsPackaging extends AbstractPackaging {
 					this.compressDirectory(output, testJar, "lib/");
 				}
 				else {
-					LOGGER.warn("Test jar not found!");
+					LOGGER.debug("No test jar found.");
 				}
 			}
 			
@@ -164,7 +164,7 @@ public class AppsPackaging extends AbstractPackaging {
 		LOGGER.info("merge local apps");
 		if (depApps != null) {
 			for (File depApp : depApps) {
-				LOGGER.warn("merge {} apps.", depApp.getName());
+				LOGGER.info("merge {} apps.", depApp.getName());
 				this.mergeArchive(output, depApp);
 			}
 		}
