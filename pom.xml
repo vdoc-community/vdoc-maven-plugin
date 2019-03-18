@@ -6,7 +6,7 @@
 
     <groupId>com.vdoc.maven</groupId>
     <artifactId>vdoc-maven-plugin</artifactId>
-    <version>15.0.0</version>
+    <version>15.0.1</version>
     <packaging>maven-plugin</packaging>
 
     <properties>
