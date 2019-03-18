@@ -197,7 +197,7 @@ public class AppsPackaging extends AbstractPackaging {
 	protected Set<org.apache.maven.artifact.Artifact> getArtifacts() {
 		Set<org.apache.maven.artifact.Artifact> artifacts = new HashSet<>();
 		for (org.apache.maven.artifact.Artifact artifact : getProject().getDependencyArtifacts()) {
-			if ("provided".equals(artifact.getScope()) && (artifact.getGroupId().startsWith("com.vdoc") || artifact.getGroupId().startsWith("com.moovapps"))) {
+			if ("provided".equals(artifact.getScope()) && (artifact.getGroupId().startsWith("com.vdoc") || artifact.getGroupId().startsWith("com.visiativ") || artifact.getGroupId().startsWith("com.moovapps"))) {
 				artifacts.add(artifact);
 			}
 		}
