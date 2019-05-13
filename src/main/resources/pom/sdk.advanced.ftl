@@ -19,6 +19,7 @@
         <include.other.modules>false</include.other.modules>
         <includeTestDataCreation>false</includeTestDataCreation>
         <packagingType>APPS</packagingType>
+        <withJavadocAndSources>true</withJavadocAndSources>
     </properties>
 
     <dependencies>
@@ -118,6 +119,43 @@
                                     <includeTest>true</includeTest>
                                     <vdocHome>${r"${VDOC_HOME}"}</vdocHome>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>javadoc-and-sources</id>
+            <activation>
+                <property>
+                    <name>withJavadocAndSources</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
