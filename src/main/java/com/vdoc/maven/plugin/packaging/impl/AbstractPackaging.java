@@ -140,7 +140,7 @@ public abstract class AbstractPackaging implements Packaging {
   }
 
   public List<RemoteRepository> getRemoteRepos() {
-    return getCreateSetupMojo().getRemoteRepos();
+    return this.getCreateSetupMojo().getProject().getRemoteProjectRepositories();
   }
 
   /**
